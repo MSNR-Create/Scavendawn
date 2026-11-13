@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0c0d0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>ヒトノママ ─ Scavendawn</title>
+<style>
+@font-face{font-family:"DotGothic16";font-display:swap;src:url("fonts/dotgothic16-latin-400-normal.woff2") format("woff2");unicode-range:U+0000-00FF,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+FEFF,U+FFFD}
+@font-face{font-family:"DotGothic16";font-display:swap;src:url("fonts/dotgothic16-japanese-400-normal.woff2") format("woff2")}
+#langSel{margin-bottom:6px}#langSel .btn{padding:5px 10px;font-size:12px}
+#legal a{color:#9fc4e8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#0c0d0f;color:#e8e4dc;font-family:"DotGothic16",-apple-system,"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;pointer-events:none;z-index:5}
+.hud button,.hud .chip{pointer-events:auto}
+#stats{left:8px;top:8px;width:150px;font-size:11px}
+.bar{display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.bar span{width:30px;opacity:.85}
+.bar i{flex:1;height:8px;background:#0008;border-radius:4px;overflow:hidden;display:block}
+.bar b{display:block;height:100%;width:100%;border-radius:4px}
+#info{margin-top:4px;line-height:1.5;text-shadow:0 1px 2px #000;font-size:11px;width:200px}
+#chips{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;width:215px}
+.chip{background:#1b1d21e6;border:1px solid #444;border-radius:14px;padding:6px 9px;font-size:13px;color:#eee}
+.chip.off{opacity:.4}
+.chip.full{border-color:#c0392b;color:#ff9a8a}
+#tr{right:8px;top:8px;text-align:right}
+#mm{width:88px;height:88px;border:1px solid #555;border-radius:4px;image-rendering:pixelated;background:#000}
+#clock{font-size:15px;font-weight:700;text-shadow:0 1px 3px #000;font-variant-numeric:tabular-nums}
+#score{font-size:11px;color:#f6d264;text-shadow:0 1px 2px #000}
+#day{font-size:11px;opacity:.85;text-shadow:0 1px 2px #000}
+#vbtn{display:grid;grid-template-columns:repeat(2,40px);gap:5px;justify-content:end;margin-top:5px}
+.rb{width:40px;height:40px;border-radius:50%;border:1px solid #666;background:#1b1d21d9;color:#eee;font-size:15px;padding:0}
+#vbtn .wide{grid-column:span 2;width:85px;border-radius:20px;font-size:12px}
+#acts{right:12px;bottom:18px;display:grid;grid-template-columns:auto auto;gap:10px;align-items:end;justify-items:end}
+.ab{border-radius:50%;border:2px solid #777;background:#1b1d21d9;color:#fff;font-weight:700;padding:0}
+#bAtk{width:84px;height:84px;font-size:16px;border-color:#c0392b;background:#7a1f17d9}
+#bAct{width:66px;height:66px;font-size:12px;border-color:#d4a23a}
+#bAct.on{background:#8a6514e6}
+#bRest{width:54px;height:54px;font-size:12px}
+#bOrd{width:58px;height:58px;font-size:11px;line-height:1.3;border-color:#5a8}
+#bOrd.atk{background:#7a1f17e6;border-color:#c0392b}
+#bOrd.evade{background:#1f4a7ae6;border-color:#4a8ad0}
+#bRest.on{background:#1f5f7ae6;border-color:#4ab}
+.ab:active,.rb:active,.chip:active{filter:brightness(1.5)}
+#log{left:50%;top:224px;transform:translateX(-50%);width:min(86vw,420px);text-align:center;font-size:13px}
+#log div{background:#000a;margin:2px auto;padding:3px 10px;border-radius:10px;display:table;transition:opacity .6s}
+#prog{left:50%;bottom:150px;transform:translateX(-50%);width:160px;height:10px;background:#000a;border-radius:5px;overflow:hidden;display:none}
+#prog b{display:block;height:100%;background:#d4a23a;width:0}
+#joy{position:fixed;width:110px;height:110px;border-radius:50%;border:2px solid #fff3;display:none;z-index:4;pointer-events:none}
+#joy i{position:absolute;left:35px;top:35px;width:40px;height:40px;border-radius:50%;background:#fff4}
+#lv{position:fixed;left:50%;top:32%;transform:translate(-50%,-50%);z-index:8;pointer-events:none;text-align:center;opacity:0;width:90vw}
+#lv b{display:block;font-size:38px;letter-spacing:.15em;color:#f6d264;text-shadow:0 0 18px #f0b030,0 2px 4px #000}
+#lv span{display:block;font-size:20px;font-weight:700;margin:4px 0;text-shadow:0 2px 4px #000}
+#lv em{display:block;font-style:normal;font-size:13px;color:#ffe9a8;text-shadow:0 1px 3px #000;line-height:1.7}
+#lv.go{animation:lv 2.4s ease-out}
+@keyframes lv{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}10%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}18%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-85%) scale(1)}}
+.scr{position:fixed;inset:0;z-index:20;background:#0c0d0fee;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;overflow:auto;touch-action:pan-y}
+.scr.top{justify-content:flex-start}
+.scr.hide{display:none}
+#title{background:#0c0d0f}
+h1{font-size:32px;letter-spacing:.12em;margin:0;color:#e8e4dc}
+h1 small{display:block;font-size:15px;letter-spacing:.35em;color:#c0392b;margin-top:6px}
+h2{margin:0 0 10px;font-size:19px}
+h3{font-size:12px;margin:12px 0 4px;text-align:left;color:#d4a23a;border-bottom:1px solid #333;padding-bottom:3px}
+.lead{font-size:12px;opacity:.8;max-width:340px;text-align:center;line-height:1.6;margin:8px 0}
+.btn{display:block;width:260px;margin:5px auto;padding:11px;border-radius:8px;border:1px solid #555;background:#1e2126;color:#eee;font-size:15px;font-weight:700}
+.btn small{display:block;font-weight:400;font-size:11px;opacity:.75;margin-top:2px}
+.btn.red{background:#7a1f17;border-color:#c0392b}
+.btn:disabled{opacity:.4}
+.btn.sm{width:auto;display:inline-block;padding:8px 13px;font-size:13px;margin:3px}
+.btn.sel{background:#7a1f17;border-color:#c0392b}
+.box{background:#16181c;border:1px solid #444;border-radius:10px;padding:14px;width:min(94vw,380px);text-align:center}
+.box p{font-size:13px;line-height:1.7;margin:6px 0 12px;white-space:pre-line}
+input#nick{width:100%;padding:11px;border-radius:8px;border:1px solid #666;background:#0c0d0f;color:#fff;font-size:16px;text-align:center;user-select:text;-webkit-user-select:text}
+#rlist{width:100%;font-size:13px;margin:8px 0;max-height:46vh;overflow:auto;text-align:left}
+#rlist div{display:flex;gap:8px;padding:5px 4px;border-bottom:1px solid #2a2c31}
+#rlist div.me{color:#f0c350}
+#rlist span:nth-child(1){width:26px;opacity:.6}
+#rlist span:nth-child(2){flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#rnote{font-size:11px;opacity:.6;min-height:14px}
+details{font-size:12px;max-width:340px;opacity:.85;line-height:1.7;margin-top:6px}
+summary{text-align:center;padding:6px}
+#big{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;margin:4px 0}
+.row{display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid #26282c;font-size:13px;text-align:left;flex-wrap:wrap}
+.row>span{flex:1;min-width:90px}
+.row.dim>span{opacity:.4}
+.mb{padding:7px 10px;border-radius:6px;border:1px solid #555;background:#23262b;color:#eee;font-size:12px}
+.mb.g{border-color:#3d8a5a;background:#1f3a2a}
+.mb.r{border-color:#c0392b;background:#5a1812}
+.mb:disabled{opacity:.35}
+.mem{background:#1b1e22;border-radius:8px;padding:8px;margin:6px 0;text-align:left;font-size:12px}
+.mem b{font-size:14px}
+.mem .sl{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.btn,.chip,.mb,.box,.rb,.ab,#mm,.bar i,.bar b,#log div,.mem,input#nick,#prog{border-radius:2px!important}
+.btn,.ab,.rb,.chip,.mb{box-shadow:0 3px 0 #000b;font-family:inherit}
+.btn:active,.ab:active,.rb:active,.chip:active,.mb:active{transform:translateY(2px);box-shadow:0 1px 0 #000b}
+#mm{border:2px solid #000;outline:1px solid #666}
+canvas#c{image-rendering:pixelated}
+body.cut .hud{opacity:0;transition:opacity .4s}
+[data-k]{position:relative}
+/* ===== スマホ横向き ===== */
+@media (orientation:landscape) and (max-height:540px){
+  #stats{left:6px;top:6px;width:120px;font-size:10px}
+  .bar{margin-bottom:2px}.bar i{height:6px}.bar span{width:26px}
+  #info{width:180px;font-size:10px;line-height:1.35;margin-top:2px}
+  #chips{position:fixed;top:6px;left:50%;transform:translateX(-50%);width:auto;flex-wrap:nowrap;margin:0;gap:6px}
+  .chip{padding:6px 10px}
+  #tr{right:6px;top:6px;display:grid;grid-template-areas:"c m" "d m" "s m" "v v";gap:0 6px;justify-items:end;align-items:start}
+  #mm{grid-area:m;width:66px;height:66px}#clock{grid-area:c}#day{grid-area:d}#score{grid-area:s}
+  #vbtn{grid-area:v;grid-template-columns:repeat(4,34px);margin-top:4px}
+  .rb{width:34px;height:34px;font-size:13px}
+  #log{top:46px;font-size:12px;width:min(52vw,420px)}
+  #acts{right:10px;bottom:10px;gap:8px}
+  #bAtk{width:74px;height:74px}#bAct{width:60px;height:60px}#bRest{width:50px;height:50px}#bOrd{width:52px;height:52px}
+  #prog{bottom:22px}
+  #lv{top:42%}#lv b{font-size:30px}
+  .scr{justify-content:flex-start;padding:8px}
+  #title h1{font-size:24px}#title .lead{margin:4px 0}
+  #jobs{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:min(96vw,600px)}
+  #jobs .btn{width:auto;margin:0;padding:8px}
+  .box{width:min(94vw,560px)}
+  #dO{display:grid;grid-template-columns:1fr 1fr;gap:5px}#dO .btn{margin:0;padding:8px}
+}
+/* ===== PC（マウス＋キーボード） ===== */
+@media (hover:hover) and (pointer:fine) and (min-width:700px){
+  #stats{width:200px;font-size:12px}.bar i{height:10px}.bar span{width:34px}
+  #info{width:280px;font-size:12px}
+  #chips{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:auto;flex-wrap:nowrap;margin:0;gap:10px}
+  .chip{font-size:17px;padding:11px 16px}
+  #mm{width:132px;height:132px}#clock{font-size:18px}#day,#score{font-size:13px}
+  #vbtn{grid-template-columns:repeat(4,40px)}
+  #log{top:16px;font-size:14px}
+  #prog{bottom:84px;width:220px}
+  #acts{right:22px;bottom:22px}
+  [data-k]::after{content:attr(data-k);position:absolute;left:-5px;top:-9px;min-width:18px;height:17px;line-height:17px;padding:0 4px;font-size:11px;font-weight:700;background:#e8e4dc;color:#111;border-radius:2px;box-shadow:0 2px 0 #000a;font-family:monospace;pointer-events:none}
+  .rb[data-k]::after{font-size:9px;min-width:14px;height:14px;line-height:14px;top:-7px}
+  canvas#c{cursor:crosshair}
+  #pcHelp{display:block!important}
+}
+#pcHelp{display:none}
+.hfig{position:relative;margin:8px auto;border:2px solid #000;outline:1px solid #555;max-width:340px}
+.hfig.wide{max-width:100%}
+.hfig img{display:block;width:100%;height:auto}
+.hm,.hl b.n{width:22px;height:22px;border-radius:50%!important;background:#f0c350;color:#111;font-weight:700;font-size:12px;line-height:22px;text-align:center;box-shadow:0 0 0 2px #000;font-family:monospace}
+.hm{position:absolute;transform:translate(-50%,-50%)}
+.hl{text-align:left;font-size:13px;line-height:1.65;margin:8px 0;padding:0;list-style:none}
+.hl li{display:flex;gap:9px;margin:7px 0;align-items:flex-start}
+.hl b.n{flex:none;display:block;margin-top:1px}
+.hl canvas{flex:none;image-rendering:pixelated;background:#1b1e22;border:1px solid #444}
+.hl li>span b{color:#f0c350}
+#hTabs{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:4px}
+#hTabs .btn{padding:6px 9px;font-size:12px;margin:0}
+.box p.hp{font-size:13px;line-height:1.7;text-align:left;margin:6px 0;white-space:normal}
+.hk{display:inline-block;min-width:22px;padding:0 5px;background:#e8e4dc;color:#111;font-family:monospace;font-size:12px;font-weight:700;text-align:center;border-radius:2px;margin:0 1px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="stats" class="hud">
+  <div class="bar"><span>体力</span><i><b id="bHp" style="background:#d6453a"></b></i></div>
+  <div class="bar"><span>満腹</span><i><b id="bFd" style="background:#d99a3a"></b></i></div>
+  <div class="bar"><span>水分</span><i><b id="bWt" style="background:#3a9bd9"></b></i></div>
+  <div class="bar"><span>疲労</span><i><b id="bFt" style="background:#9a7fd0"></b></i></div>
+  <div class="bar"><span>人間</span><i><b id="bHm" style="background:#8fbf7a"></b></i></div>
+  <div id="info"></div>
+  <div id="chips">
+    <button class="chip" id="uFood" data-k="1">🍖<b>0</b></button>
+    <button class="chip" id="uWater" data-k="2">💧<b>0</b></button>
+    <button class="chip" id="uBand" data-k="3">🩹<b>0</b></button>
+    <button class="chip" id="uBag" data-k="4">🎒<b>0/12</b></button>
+    <button class="chip" id="uGun" data-k="5">🔫<b>撃つ</b></button>
+  </div>
+</div>
+<div id="tr" class="hud">
+  <canvas id="mm" width="98" height="98"></canvas>
+  <div id="clock">00:00</div><div id="day"></div><div id="score"></div>
+  <div id="vbtn">
+    <button class="rb" id="bZo" data-k="-">−</button><button class="rb" id="bZi" data-k="+">＋</button>
+    <button class="rb" id="bPause" data-k="Esc">⏸</button><button class="rb" id="bMute" data-k="M">🔊</button>
+  </div>
+</div>
+<div id="log" class="hud"></div>
+<div id="prog" class="hud"><b></b></div>
+<div id="acts" class="hud">
+  <button class="ab" id="bRest" data-k="O">休む</button>
+  <button class="ab" id="bAct" data-k="P">―</button>
+  <button class="ab" id="bOrd" data-k="L">指示<br>お任せ</button>
+  <button class="ab" id="bAtk" data-k="Enter">攻撃</button>
+</div>
+<div id="joy"><i></i></div>
+<div id="lv"><b>LEVEL UP</b><span id="lvN"></span><em id="lvD"></em></div>
+
+<div id="title" class="scr">
+  <div id="langSel"><button class="btn sm" data-l="ja">日本語</button><button class="btn sm" data-l="en">English</button></div>
+  <h1>ヒトノママ<small>Scavendawn</small></h1>
+  <p class="lead">20分生き延びれば救助ヘリが来る。物資を漁り、仲間を選び、人間であり続けろ。</p>
+  <div><button class="btn sm sel" data-q="0">通常 20分</button><button class="btn sm" data-q="1">クイック 5分</button></div>
+  <div><button class="btn sm" data-d="easy">やさしい</button><button class="btn sm sel" data-d="normal">ふつう</button><button class="btn sm" data-d="hard">地獄</button></div>
+  <p class="lead" style="margin:4px 0">職業を選んで開始</p>
+  <div id="jobs"></div>
+  <div style="margin-top:8px"><button class="btn sm" id="bHelp">📖 遊び方</button><button class="btn sm" id="bRankT">🏆 ランキング</button></div>
+  <p class="lead" id="legal" style="font-size:11px;margin:6px 0 0"><a href="https://msnr-create.jp/page/privacy" target="_blank" rel="noopener">プライバシーポリシー</a> ・ <a href="https://msnr-create.jp/page/terms" target="_blank" rel="noopener">利用規約</a><span id="repoWrap"> ・ <a id="repoA" target="_blank" rel="noopener">ソースコード</a></span><br>© 2026 <a href="https://msnr-create.jp/" target="_blank" rel="noopener">MSNR_Create</a> ・ MIT License</p>
+  <p id="pcHelp" class="lead" style="font-size:11px">PC：WASD 移動／マウスで向き・左クリック or Enter 攻撃／1〜5 アイテム・🎒・🔫／O 休む・P 調べる・L 指示／Esc 一時停止</p>
+
+</div>
+
+<div id="dlg" class="scr hide"><div class="box"><h2 id="dT"></h2><p id="dB"></p><div id="dO"></div></div></div>
+
+<div id="bag" class="scr top hide"><div class="box"><h2 id="bagT"></h2><div id="bagB"></div><button class="btn" id="bagC" style="width:100%;margin-top:10px">閉じる</button></div></div>
+
+<div id="pause" class="scr hide"><div class="box"><h2>一時停止中</h2><p>画面を離れたため自動で停止しました。</p>
+  <button class="btn red" id="bResume" style="width:100%">再開する</button><button class="btn" id="bHelpP" style="width:100%">📖 遊び方</button><button class="btn" id="bGiveUp" style="width:100%">あきらめる</button></div></div>
+
+<div id="over" class="scr hide"><div class="box">
+  <h2 id="oT">あなたは死んだ</h2>
+  <div id="big">00:00</div>
+  <p id="oS"></p>
+  <input id="nick" maxlength="12" placeholder="ニックネーム（12文字まで）" autocomplete="off">
+  <p class="lead" style="font-size:11px;margin:4px 0">本名や連絡先は入れないでください</p>
+  <button class="btn red" id="bSub" style="width:100%">ランキングに登録</button>
+  <button class="btn" id="bRankO" style="width:100%">🏆 ランキングを見る</button>
+  <button class="btn" id="bRetry" style="width:100%">タイトルへ</button>
+</div></div>
+
+<div id="rank" class="scr hide"><div class="box">
+  <h2>🏆 スコアランキング</h2>
+  <div class="tabs"><button class="btn sm" data-m="0">通常</button><button class="btn sm" data-m="1">クイック</button></div>
+  <div class="tabs"><button class="btn sm" data-r="easy">やさしい</button><button class="btn sm" data-r="normal">ふつう</button><button class="btn sm" data-r="hard">地獄</button></div>
+  <div id="rlist"></div><div id="rnote"></div>
+  <button class="btn" id="bRankC" style="width:100%">閉じる</button>
+</div></div>
+
+<div id="help" class="scr top hide"><div class="box" style="width:min(96vw,540px)">
+  <h2 id="hT"></h2><div id="hTabs"></div><div id="hBody"></div>
+  <div style="display:flex;gap:6px"><button class="btn" id="hPrev" style="flex:1">◀ 前へ</button><button class="btn" id="hNext" style="flex:1">次へ ▶</button></div>
+  <button class="btn" id="hClose" style="width:100%">閉じる</button>
+</div></div>
+
+<script>
+'use strict';
+/* ---------- i18n ---------- */
+const LANG=(()=>{let l='';try{const h=location.hash.replace('#','');if(h==='en'||h==='ja')l=h;}catch(e){}
+  if(!l)try{l=localStorage.getItem('ld_lang')||'';}catch(e){}
+  if(l!=='en'&&l!=='ja')l=/^ja/i.test(navigator.language||'ja')?'ja':'en';return l;})(),EN=LANG==='en',HDIR=EN?'help/en/':'help/';
+const I18N={"やさしい":"Easy","ふつう":"Normal","地獄":"Hell","素手":"Fists","バット":"Bat","ナイフ":"Knife","斧":"Axe","日本刀":"Katana","なし":"None","革ジャケット":"Leather Jacket","プロテクター":"Body Pads","防弾ベスト":"Bulletproof Vest","食料":"Food","水":"Water","包帯":"Bandage","燃料缶":"Fuel Can","修理パーツ":"Repair Part","警察官":"Police Officer","拳銃＋弾12発。射撃ダメージ+30%":"Pistol + 12 rounds. Gun damage +30%","看護師":"Nurse","包帯3。包帯の回復+50%、全員が少しずつ自然回復":"3 bandages. Bandages heal +50%; everyone slowly regenerates","整備士":"Mechanic","パーツ2・燃料缶1・ライト。修理は常にパーツ1個、燃費+30%":"2 parts, 1 fuel can, flashlight. Repairs always cost 1 part; fuel lasts 30% longer","アスリート":"Athlete","バット所持。移動+12%、疲れにくい、所持枠+4":"Starts with a bat. Move +12%, tires slowly, +4 slots","一般人":"Civilian","特性なし":"No special trait","大食い":"Big Eater","食料の消費が2倍":"Eats twice as much","汗かき":"Heavy Sweater","水の消費が2倍":"Drinks twice as much","病弱":"Frail","体力が低い":"Low health","騒がしい":"Noisy","ゾンビに気づかれやすくなる":"Zombies notice you more easily","勇敢":"Brave","自分からゾンビに向かっていく":"Charges at zombies on their own","慎重":"Careful","あなたのそばを守って戦う":"Fights close to you","臆病":"Timid","戦わずゾンビから逃げ回る":"Never fights; runs from zombies","民家":"House","コンビニ":"Store","病院":"Hospital","警察署":"Police Station","ガソリンスタンド":"Gas Station","工具店":"Hardware Store","倉庫":"Warehouse","ケンジ":"Kenji","ユミ":"Yumi","タケシ":"Takeshi","サクラ":"Sakura","ハルト":"Haruto","ミオ":"Mio","リョウ":"Ryo","アカネ":"Akane","ダイチ":"Daichi","ナナ":"Nana","ソウタ":"Sota","エミ":"Emi","ゴロウ":"Goro","チヒロ":"Chihiro","レン":"Ren","カナ":"Kana","の":"'s ","が壊れた！":" broke!","は":": ","予備の":"Switched to spare ","に持ち替えた":"","が壊れそうだ":" is about to break","拳銃":"Pistol","ライト":"Flashlight","弾5":"5 rounds","(保管)":" (stored)","(新品に交換)":" (swapped for new)","(予備)":" (spare)","弾":"Ammo ","：":": ","、":", ","何もなかった":"Nothing found","　🎒満杯で":"  🎒 Full: left ","個残した":" behind","・クイック":" / Quick","自分":"You","として目覚めた。生き延びろ。":" — you wake up. Survive.","📻 無線機を探せ（ミニマップの紫の印）。なければ救助は来ない":"📻 Find a radio (purple marks on the minimap). Without it, no rescue will come","戦闘Lv ":"Combat Lv ","攻撃力 +10%　最大体力 +5　体力回復":"Attack +10%   Max HP +5   HP restored","探索が中断された":"Search interrupted","📦 物資が投下された！（橙の印）ゾンビも集まっている":"📦 Supply drop! (orange mark) Zombies are gathering too","東":"East","南":"South","西":"West","北":"North","から大群が接近中！":": a horde is closing in!","🆘 救難信号だ！（水色の印）誰かが助けを求めている":"🆘 Distress signal! (cyan mark) Someone is calling for help","投下物資":"Supply drop","投下物資は荒らされてしまった":"The supply drop was ransacked","大群が押し寄せてきた！":"The horde is here!","給油":"Refuel","降りる":"Exit","外へ":"Leave","話す":"Talk","乗り物":"Car","隠れる":"Hide","回収":"Collect","調べる":"Search","に立てこもった（バリケード耐久":": barricaded inside (barricade ","）。中で休むと回復2倍":"). Resting inside recovers 2x","スタンドで":"Station: +","L給油した":"L of fuel","（タンクは空になった）":" (the tank is now empty)","📻 無線機を見つけた！救助隊と連絡が取れる":"📻 Found a radio! You can reach the rescue team","病院の設備で全員を手当てした（全回復）":"Treated everyone with hospital supplies (fully healed)","この民家は隠れ家に使える（そばで休むと回復2倍）":"This house makes a good hideout (resting nearby recovers 2x)","物音…！中にゾンビがいた":"A noise...! Zombies were inside","中に生存者が隠れていた！":"A survivor was hiding inside!","乗り捨てられた車":"Abandoned Car","故障中（修理パーツ":"Broken (needs ","個必要）":" repair part(s))","走行可能　耐久":"Drivable   Condition ","\n燃料 ":"\nFuel ","乗る":"Drive","壊れている":"Broken","燃料がない":"No fuel","仲間も同乗する":"Companions ride along","エンジンがかかった":"The engine starts","修理する":"Repair","車を修理した":"Car repaired","給油する":"Refuel","燃料缶 所持":"Fuel cans: ","（1缶10L）":" (10L each)","缶給油した":" can(s) poured in","車内を漁る":"Search the car","調査済み":"Already searched","車内":"Car","閉じる":"Close","人間性":"Humanity","「まだ人間がいたか。腕には覚えがある、連れて行け」":"\"So there are still humans. I can fight. Take me along.\"","「一人で十体は片づけた。あんたの背中、預かってやる」":"\"I've put down ten of them alone. I'll watch your back.\"","「逃げ回るのは性に合わない。戦える相手を探してた」":"\"Running isn't my style. I was looking for someone to fight beside.\"","「…人間、だよな。頼む、一緒に行かせてくれ」":"\"...You're human, right? Please, let me come with you.\"","「静かにしてる。足は引っぱらない。だから」":"\"I'll stay quiet. I won't slow you down. So...\"","「一人だと、眠るのが怖いんだ」":"\"When I'm alone, I'm afraid to sleep.\"","「う、撃たないで…！ 何でもするから、置いていかないで」":"\"D-don't shoot...! I'll do anything, just don't leave me.\"","「もう一人は嫌なんだ…お願い…」":"\"I can't be alone anymore... please...\"","「あ、あなた人間？ 本当に？ …よかった…」":"\"A-are you human? Really? ...Thank god...\"","「足をやられた…まだ歩ける、歩けるから」":"\"My leg's hurt... I can still walk, I can.\"","「噛まれたんじゃない、切っただけだ。信じてくれ」":"\"It's not a bite, just a cut. Believe me.\"","「血が止まらないんだ。包帯、持ってないか」":"\"The bleeding won't stop. Do you have a bandage?\"","が隣に並んだ。足音が、ひとつ増えた。":" fell in beside me. One more set of footsteps.","手を差し出した。":"I held out my hand. ","は少し迷って、握り返した。":" hesitated, then took it.","の名前を、忘れないように二度呼んだ。":" — I said the name twice, so I would not forget it.","は私の目を見て、後ずさった。「…あんたとは行けない」":" looked me in the eye and backed away. \"...Not with you.\"","食料と水を渡した。":"I handed over food and water. ","は何度も頭を下げて、角を曲がっていった。":" bowed again and again, then turned the corner.","分け合えるうちは、まだ人間だ。そう思うことにした。":"While I can still share, I am still human. I decided to believe that.","は「生きろよ」と言った。言われる側でいられた。":" said, \"Stay alive.\" I was still someone people say that to.","振り返らなかった。振り返れなかった。":"I did not look back. I could not.","背中に声が刺さった。聞こえないふりは、うまくなった。":"A voice struck my back. I have gotten good at pretending not to hear.","助けない理由を、歩きながら数えた。":"I counted the reasons not to help, as I walked.","荷物を奪った。":"I took the pack. ","は何も言わなかった。その目を、たぶん忘れない。":" said nothing. I will not forget those eyes.","生きるためだ。そう言い聞かせる声が、自分のものに聞こえなかった。":"It was to survive. The voice telling me so did not sound like mine.","を置いてきた。名前を呼ぶ声が、角を曲がるまで続いた。":" was left behind. The voice calling after me lasted until I turned the corner.","「待ってくれ」と":"\"Wait,\" ","は言った。私は歩く速さを変えなかった。":" said. I did not change my pace.","が倒れた。名前を呼んだが、もう届かなかった。":" went down. I called the name, but it no longer reached.","を守れなかった。数えるのは、もうやめた。":" — I could not protect them. I have stopped counting.","は黙って立ち上がり、去っていった。責める資格は、私にない。":" stood up without a word and walked away. I have no right to blame them.","は眠るように動かなくなった。水の一口も、渡せなかった。":" stopped moving, as if falling asleep. I could not offer even a sip of water.","は夜のうちに消えていた。私の顔を、恐れていたのだと思う。":" was gone by morning. I think it was my face they feared.","信号が途絶えた。間に合わなかったのか、行かなかったのか。":"The signal went silent. Was I too late, or did I simply not go?","腹が減った、と思った。何に対してなのか、考えないようにした。":"I thought: I am hungry. I tried not to think about for what.","鏡があっても、もう覗かないだろう。視界の端が赤い。":"Even with a mirror, I would not look anymore. The edges of my sight are red.","赤が少し引いた。まだ、戻れる。":"The red has faded a little. I can still go back.","赤が引いていく。人の顔を、思い出せる。":"The red is draining away. I can remember faces again.","まだ誰かの名前を覚えている。それだけで、夜が少し明るい。":"I still remember someone's name. That alone makes the night a little brighter.","飢えが、考える順番を変えていく。":"Hunger is changing the order in which I think.","最後まで、誰かの名前を呼べた。":"To the very end, I could still call someone by name.","人であることを、ぎりぎり手放さなかった。":"I held on to being human — barely.","生き延びた何かが、私の形をしていた。":"Something survived. It had my shape.","（":" (","生存者：":"Survivor: ","「…置いていったくせに、今さら何の用だ」\n返す言葉は、持っていなかった。":"\"...You left me. What do you want now?\"\nI had no words to give back.","立ち去る":"Walk away","\n性格【":"\nTemper [","】":"] ","\n所持枠+":"\nSlots +","。空腹・渇きはストレージから自動で補給":". Hunger and thirst are refilled from storage automatically","誰かと入れ替えて仲間にする":"Swap with a companion","包帯1を使う ／ ":"Uses 1 bandage / ","置き去り-15、仲間+10":"Abandon -15, recruit +10","誰と入れ替える？":"Swap with whom?","を仲間にする代わりに、1人をここに置いていく。":" joins — but one of yours stays here.","／":" / ","体力":"HP ","　装備は持って行かれる":"   They keep their gear","やめる":"Cancel","仲間にする":"Recruit","人間性+10":"Humanity +10","物資を分けて別れる":"Share supplies and part","食料1・水1を渡す ／ 人間性+6":"Give 1 food, 1 water / Humanity +6","お礼に":"They left ","を置いていった":" as thanks","見捨てて立ち去る":"Walk away","人間性-7":"Humanity -7","物資を奪う":"Rob them","人間性-18":"Humanity -18","奪った":"Taken","ストレージが満杯で外せない（先に何か捨てる）":"Storage is full — drop something first","🎒 ストレージ ":"🎒 Storage ","アイテム（弾 ":"Items (ammo ","発は枠を使わない）":" takes no slots)","🍖 食料（満腹+38）":"🍖 Food (hunger +38)","💧 水（水分+42）":"💧 Water (thirst +42)","🩹 包帯（体力+":"🩹 Bandage (HP +","⛽ 燃料缶（車に10L）":"⛽ Fuel can (10L for a car)","🔧 修理パーツ":"🔧 Repair part","自分に":"You","に":"","捨てる":"Drop","保管中の装備（タップした相手に装備）":"Stored gear (tap who equips it)","（攻撃":" (ATK ","・耐久":", dur ","（軽減":" (-","%）":"%)","）":")","メンバーの装備（タップで外して保管）":"Party gear (tap to unequip and store)","　":"  ","／⚠":" / ⚠","　体力":"  HP ","満腹":"Food ","　水分":"  Water ","　自然回復 +":"  Regen +","/秒":"/s","武器：":"Weapon: ","🔧武器を修理（パーツ1）":"🔧 Repair weapon (1 part)","を修理した":" repaired","防具：":"Armor: ","銃：":"Gun: ","ライト：":"Light: ","あり":"Yes","本当に置いていく（人間性-15）":"Really abandon (Humanity -15)","置いていく":"Abandon","お任せ":"Auto","攻撃":"Attack","回避":"Evade","仲間への指示：":"Order: ","（性格に任せる）":" (follow their nature)","（全員で戦う）":" (everyone fights)","（戦わず逃げる）":" (avoid combat)","🔫 銃を使う（自分と仲間）":"🔫 Guns ON (you and companions)","🔫 銃を使わない（弾を温存）":"🔫 Guns OFF (saving ammo)","⚠ 脅威Lv":"⚠ Threat Lv","：ゾンビが増え、凶暴になっている":": more zombies, more vicious","遠くでヘリの音…📻無線機がないと合流できない（紫の印の建物を探せ）":"A helicopter in the distance... 📻 Without a radio you cannot meet it (search the purple-marked buildings)","📻「こちら救助隊。":"📻 \"Rescue team here. Landing at ","に降下する」緑の点へ向かえ":".\" Head for the green mark","🚁 救助ヘリが来た！合流地点へ急げ":"🚁 The rescue helicopter is here! Hurry to the landing zone","🚁 ヘリが着陸した。乗り込め！":"🚁 The helicopter has landed. Get in!","ヘリに乗り込んだ！":"You are aboard!","燃料切れだ":"Out of fuel","車が壊れた！":"The car broke down!","バリケードが破られた！もうここには隠れられない":"The barricade is broken! You can no longer hide here","💤 イビキが外まで響いている…":"💤 Your snoring carries outside...","ガタッ…物音を立ててしまった":"Clatter... you made a noise","床が大きくきしんだ":"The floor creaked loudly","何かを落としてしまった":"You dropped something","⚠ ゾンビに気づかれた！集まってくる":"⚠ They noticed you! Zombies are gathering","に包帯を使った":" was bandaged","に与える食料・水がない":": no food or water left to give","「もう限界だ…」":"\"I can't go on...\" ","ギャアアア！":"SCREEEECH!","高潔":"Noble","普通":"Steady","荒み":"Fraying","冷酷":"Cold","撃つ":"Fire","温存":"Hold","🌙夜":"🌙Night","☀昼":"☀Day"," 🚁到着":" 🚁Here"," 📻未入手":" 📻None","探索中":"Busy","指示\n":"Order\n","休憩中":"Resting","休む":"Rest","……ア゛ァ……":"...ghh...aa...","体が、言うことをきかない…":"My body will not obey me...","理性が、溶けていく…":"My reason is dissolving...","傷口が、熱い…":"The wound is burning...","名無しの生存者":"Nameless Survivor","🚁 人のまま、夜が明けた":"🚁 Still human at dawn","人では、なくなった":"No longer human","人のまま、死んだ":"Died human","ランキングに登録":"Submit to ranking","登録中…":"Submitting...","登録しました":"Submitted","この端末に記録しました":"Saved on this device","読み込み中…":"Loading...","オンラインランキング":"Online ranking","この端末のみの記録（オンライン未接続）":"Records on this device only (offline)","まだ記録がありません":"No records yet","画面の見方":"The Screen","<b>ステータス</b>：体力／満腹／水分／疲労／人間性。満腹と水分が高いほど体力が早く自然回復する。疲労が溜まると足が遅くなる":"<b>Status</b>: HP / Food / Water / Fatigue / Humanity. The higher Food and Water are, the faster HP regenerates. High fatigue slows you down","<b>状態</b>：職業・戦闘Lv・撃破数・仲間の数／脅威Lv・人間性／武器（残り耐久）と弾／防具・燃料缶・修理パーツ":"<b>Info</b>: job, combat Lv, kills, companions / threat Lv, humanity / weapon (durability left) and ammo / armor, fuel cans, repair parts","<b>アイテム</b>：🍖食料 💧水 🩹包帯はタップで自分に使う。🎒はストレージと装備、🔫は銃を「撃つ／温存」に一括切替":"<b>Items</b>: tap 🍖 Food, 💧 Water, 🩹 Bandage to use them on yourself. 🎒 opens storage and gear. 🔫 switches all guns between Fire and Hold","<b>ミニマップ</b>：白=自分　水色=生存者　黄=動く車　赤=近くのゾンビ　紫=無線機のある建物　橙=投下物資　緑=ヘリの合流地点":"<b>Minimap</b>: white = you, cyan = survivors, yellow = working cars, red = nearby zombies, purple = radio buildings, orange = supply drop, green = landing zone","<b>時間</b>：経過時間／日数と昼夜／救助まで（📻未入手なら無線機が必要）／スコア（×は人間性の倍率）":"<b>Time</b>: elapsed time / day and day-night / time to rescue (📻None means you still need a radio) / score (× is the humanity multiplier)","<b>−＋</b> 拡大縮小　<b>⏸</b> 一時停止　<b>🔊</b> 消音":"<b>− ＋</b> zoom   <b>⏸</b> pause   <b>🔊</b> mute","<b>休む</b>：立ち止まって疲労を回復。動くか攻撃されると解除":"<b>Rest</b>: stand still to recover fatigue. Moving or being hit cancels it","<b>行動ボタン</b>：近くの対象で「調べる・回収・話す・乗り物・隠れる・給油・降りる・外へ」に変わる。黄色く光っていれば使える":"<b>Action button</b>: changes with what is nearby — Search, Collect, Talk, Car, Hide, Refuel, Exit, Leave. It works when lit yellow","<b>指示</b>：仲間に「お任せ → 攻撃 → 回避」を順に切替":"<b>Order</b>: cycles companions through Auto → Attack → Evade","<b>攻撃</b>：近接は間合いに入れば自動。押している間は銃も使う":"<b>Attack</b>: melee is automatic in range. Hold the button to also use your gun","<b>自分</b>：頭上の黄色い▼。足元の網目の扇が近接の届く範囲、点線が銃の向き。攻撃は<b>正面だけ</b>。赤い弧は殴られた方向、橙の弧は死角の敵":"<b>You</b>: the yellow ▼ overhead. The dotted fan at your feet is melee reach; the dotted line is your gun aim. You only attack <b>what is in front of you</b>. A red arc shows where you were hit from; orange arcs are enemies in your blind spot","操作方法":"Controls","街と建物":"City & Buildings","<p class=\"hp\">屋根の印で種類が分かる。そばで行動ボタン（調べる）を押すと探索し、種類ごとの物資が手に入る。満杯で持てない分は残り、あとで「回収」できる。</p>":"<p class=\"hp\">The roof icon shows the building type. Press the action button (Search) next to it to loot supplies that depend on the type. Anything you cannot carry stays there to Collect later.</p>","食料・水・包帯・バット・ナイフ・革ジャケット・ライト。バリケードが頑丈で、調べ終えると隠れ家（🛏）になる":"Food, water, bandages, bat, knife, leather jacket, flashlight. Strong barricade; becomes a hideout (🛏) once searched","食料と水が多い":"Lots of food and water","包帯が多い。調べた瞬間に全員の体力が全回復":"Lots of bandages. Searching it fully heals everyone","弾・拳銃・防弾ベスト":"Ammo, pistol, bulletproof vest","燃料缶。車に乗って横付けすると直接給油できる":"Fuel cans. Pull up in a car to refuel directly","修理パーツ・斧・プロテクター・ライト":"Repair parts, axe, body pads, flashlight","物資が多いが、中にゾンビが潜んでいることが多い":"Plenty of supplies, but zombies often lurk inside","調べ終えた建物":"Searched building","「隠れる」で立てこもれる":"You can Hide inside","破られた建物":"Breached building","もう隠れられない":"No longer usable as shelter","<p class=\"hp\">・紫に点滅する印：<b style=\"color:#d080ff\">無線機</b>がある建物（ふつう・地獄で必要）<br>・建物の中に生存者が隠れていることもある<br>・乗り捨てられた車は、修理パーツで直し、燃料缶で給油すれば乗れる。ゾンビを轢けるが車も傷む</p>":"<p class=\"hp\">・Blinking purple mark: a building with a <b style=\"color:#d080ff\">radio</b> (needed on Normal and Hell)<br>・Survivors sometimes hide inside buildings<br>・Abandoned cars can be driven once repaired with parts and fueled with cans. You can run zombies over, but the car takes damage</p>","生存者と人間性":"Survivors & Humanity","夜と立てこもり":"Night & Shelter","ゾンビ図鑑":"Zombie Types","通常":"Walker","遅いが数が多い":"Slow, but there are many","俊足":"Runner","足が速く、体力は低い":"Fast, low health","大型":"Brute","硬くて一撃が重い":"Tough, and hits hard","絶叫型":"Screamer","見つけると叫び、周囲のゾンビをまとめて呼ぶ。最優先で倒す":"Screams on sight and calls every zombie nearby. Kill it first","膨張型":"Bloater","倒すと破裂して周囲にダメージ。銃で離れて倒すか、倒したら離れる":"Bursts when killed, damaging everything around. Shoot it from range, or back off after the kill","吐きかけ型":"Spitter","離れた所から弾を吐く。立ち止まらない":"Spits from a distance. Keep moving","夜行型":"Night Stalker","夜だけ現れて速い。ライトで照らすと大きく怯み、脆くなる。朝に消える":"Appears only at night and is fast. A flashlight beam staggers and weakens it. Gone by morning","<p class=\"hp\">時間が経つほど「脅威Lv」が上がり、数・体力・攻撃が増え、新しい種類が出てくる。</p>":"<p class=\"hp\">The Threat Lv rises with time: more zombies, more health, more damage, and new types.</p>","装備とアイテム":"Gear & Items","救助とスコア":"Rescue & Score","</b>：":"</b>: "};
+const I18H={"20分生き延びれば救助ヘリが来る。物資を漁り、仲間を選び、人間であり続けろ。":"Survive 20 minutes and a rescue helicopter will come. Scavenge, choose your companions, and stay human.","PC：WASD 移動／マウスで向き・左クリック or Enter 攻撃／1〜5 アイテム・🎒・🔫／O 休む・P 調べる・L 指示／Esc 一時停止":"PC: WASD move / mouse aims, left click or Enter attacks / 1-5 items, 🎒, 🔫 / O rest, P search, L order / Esc pause","◀ 前へ":"◀ Back","あきらめる":"Give up","あなたは死んだ":"You died","お任せ":"Auto","ふつう":"Normal","やさしい":"Easy","クイック":"Quick","クイック 5分":"Quick 5 min","タイトルへ":"Back to title","ニックネーム（12文字まで）":"Nickname (up to 12 characters)","ランキングに登録":"Submit to ranking","一時停止中":"Paused","人間":"Hum.","休む":"Rest","体力":"HP","再開する":"Resume","地獄":"Hell","指示":"Order","撃つ":"Fire","攻撃":"Attack","次へ ▶":"Next ▶","水分":"Water","満腹":"Food","画面を離れたため自動で停止しました。":"The game paused automatically because you left the screen.","疲労":"Tired","職業を選んで開始":"Choose a job to start","通常":"Standard","通常 20分":"Standard 20 min","閉じる":"Close","🏆 スコアランキング":"🏆 Score Ranking","🏆 ランキング":"🏆 Ranking","🏆 ランキングを見る":"🏆 View ranking","📖 遊び方":"📖 How to play","本名や連絡先は入れないでください":"Do not enter your real name or contact details","プライバシーポリシー":"Privacy Policy","利用規約":"Terms","ソースコード":"Source code"};
+function tr(s){return EN&&I18N[s]!==undefined?I18N[s]:s;}
+function F(ja,en){let t=EN?en:ja;for(let i=2;i<arguments.length;i++)t=t.split('{'+(i-2)+'}').join(arguments[i]);return t;}
+function setLang(l){try{localStorage.setItem('ld_lang',l);}catch(e){}try{location.hash=l;}catch(e){}location.reload();}
+document.documentElement.lang=LANG;
+if(EN){const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const ns=[];while(w.nextNode())ns.push(w.currentNode);
+  for(const n of ns){const t=n.nodeValue.trim();if(t&&I18H[t]!==undefined)n.nodeValue=n.nodeValue.replace(t,I18H[t]);}
+  for(const e of document.querySelectorAll('[placeholder]'))if(I18H[e.placeholder])e.placeholder=I18H[e.placeholder];
+  const h=document.querySelector('#title h1');if(h){h.firstChild.nodeValue='Scavendawn';h.querySelector('small').textContent='ヒトノママ';}
+  document.title='Scavendawn ─ ヒトノママ';}
+
+const $=id=>document.getElementById(id);
+const cv=$('c'),ctx=cv.getContext('2d');
+let VW=0,VH=0,DPR=1;
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);VW=innerWidth;VH=innerHeight;cv.width=VW*DPR;cv.height=VH*DPR;}
+addEventListener('resize',resize);resize();
+const R=Math.random,rnd=(a,b)=>a+R()*(b-a),ri=(a,b)=>Math.floor(rnd(a,b+1)),hyp=Math.hypot,clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const pick=a=>a[Math.floor(R()*a.length)];
+function wpick(t){let s=0;for(const e of t)s+=e[1];let r=R()*s;for(const e of t){r-=e[1];if(r<=0)return e[0];}return t[0][0];}
+function angd(a,b){let d=a-b;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return d;}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+
+/* ---------- data ---------- */
+const T=40,MW=98,MH=98,SELF=!window.claude&&!/claude|anthropic/i.test(location.hostname)&&/^http/.test(location.protocol),RANK_API=SELF?'rank.php':'';
+const DIFF={easy:{n:tr('やさしい'),zhp:.8,zdmg:.7,sp:.7,dec:.75,loot:1.3,ramp:.7},normal:{n:tr('ふつう'),zhp:1,zdmg:1,sp:1,dec:1,loot:1,ramp:1},hard:{n:tr('地獄'),zhp:1.25,zdmg:1.3,sp:1.4,dec:1.25,loot:.8,ramp:1.4}};
+const WEAP=[{n:tr('素手'),dmg:8,cd:.42,range:30,cl:1,dur:0},{n:tr('バット'),dmg:18,cd:.5,range:42,cl:2,dur:60},{n:tr('ナイフ'),dmg:23,cd:.32,range:36,cl:1,dur:45},{n:tr('斧'),dmg:40,cd:.68,range:44,cl:2,dur:70},{n:tr('日本刀'),dmg:52,cd:.48,range:50,cl:3,dur:90}];
+const ARM=[{n:tr('なし'),def:0},{n:tr('革ジャケット'),def:.2},{n:tr('プロテクター'),def:.35},{n:tr('防弾ベスト'),def:.5}];
+const CN={food:tr('食料'),water:tr('水'),band:tr('包帯'),fuel:tr('燃料缶'),parts:tr('修理パーツ')};
+const JOBS={
+cop:{n:tr('警察官'),ic:'👮',d:tr('拳銃＋弾12発。射撃ダメージ+30%'),eq:{gun:true},ammo:12,items:{}},
+nurse:{n:tr('看護師'),ic:'🩺',d:tr('包帯3。包帯の回復+50%、全員が少しずつ自然回復'),eq:{},items:{band:3}},
+mech:{n:tr('整備士'),ic:'🔧',d:tr('パーツ2・燃料缶1・ライト。修理は常にパーツ1個、燃費+30%'),eq:{light:true},items:{parts:2,fuel:1}},
+ath:{n:tr('アスリート'),ic:'🏃',d:tr('バット所持。移動+12%、疲れにくい、所持枠+4'),eq:{w:1},items:{}},
+civ:{n:tr('一般人'),ic:'🧑',d:tr('特性なし'),eq:{},items:{}}};
+const DEB={glut:{n:tr('大食い'),d:tr('食料の消費が2倍')},thirsty:{n:tr('汗かき'),d:tr('水の消費が2倍')},weak:{n:tr('病弱'),d:tr('体力が低い')},loud:{n:tr('騒がしい'),d:tr('ゾンビに気づかれやすくなる')}};
+const TEMP={brave:{n:tr('勇敢'),d:tr('自分からゾンビに向かっていく')},calm:{n:tr('慎重'),d:tr('あなたのそばを守って戦う')},timid:{n:tr('臆病'),d:tr('戦わずゾンビから逃げ回る')}};
+const BT=[
+{k:'house',n:tr('民家'),ic:'🏠',w:40,c:['#6f5d4c','#57493c','#8d7a66'],h:[40,70],loot:[['food',3],['water',3],['band',1],['w1',1.2],['w2',1],['a1',1],['light',.8],['w4',.15]]},
+{k:'store',n:tr('コンビニ'),ic:'🏪',w:15,c:['#4c6a6f','#3b5357','#6f9399'],h:[32,42],loot:[['food',5],['water',5],['band',1]]},
+{k:'hosp',n:tr('病院'),ic:'🏥',w:7,c:['#8c8f93','#6e7175','#c9ccd0'],h:[85,120],loot:[['band',6],['water',1.5],['food',.5]]},
+{k:'police',n:tr('警察署'),ic:'🚓',w:6,c:['#3d4a66','#2f3a52','#566a94'],h:[55,75],loot:[['ammo',4],['gun',2.5],['a3',1.5],['band',1],['light',1]]},
+{k:'gas',n:tr('ガソリンスタンド'),ic:'⛽',w:8,c:['#7a4a3a','#5f392d','#b0624a'],h:[28,36],loot:[['fuel',5],['parts',1],['water',1]]},
+{k:'tool',n:tr('工具店'),ic:'🔧',w:9,c:['#6b6a3d','#54532f','#96945a'],h:[38,52],loot:[['parts',5],['w3',2],['fuel',1],['a2',1.5],['light',2]]},
+{k:'ware',n:tr('倉庫'),ic:'📦',w:15,c:['#55585c','#434649','#74787d'],h:[50,70],loot:[['food',2],['water',2],['fuel',1.5],['parts',2],['ammo',1],['a2',.5]]}];
+const NAMES=[tr('ケンジ'),tr('ユミ'),tr('タケシ'),tr('サクラ'),tr('ハルト'),tr('ミオ'),tr('リョウ'),tr('アカネ'),tr('ダイチ'),tr('ナナ'),tr('ソウタ'),tr('エミ'),tr('ゴロウ'),tr('チヒロ'),tr('レン'),tr('カナ')];
+
+let grid,builds,ground,mini,S=null,selD='normal';
+const cam={x:0,y:0,ang:0,zoom:1,zl:0};
+
+/* ---------- pixel art ---------- */
+const SC=.4,G=16,OUT='#15151a';
+function mkc(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
+function bmp(g,rows,x,y,col,sz){sz=sz||1;g.fillStyle=col;for(let j=0;j<rows.length;j++)for(let i=0;i<rows[j].length;i++)if(rows[j][i]==='#')g.fillRect(x+i*sz,y+j*sz,sz,sz);}
+const IC={
+house:["...#...","..###..",".#####.","#######",".##.##.",".##.##.",".##.##."],
+store:["..###..",".#...#.","#######","#.....#","#.#.#.#","#.....#","#######"],
+hosp:["..###..","..###..","#######","#######","#######","..###..","..###.."],
+police:["#######","#######","##.#.##","#######",".#####.","..###..","...#..."],
+gas:["...#...","..###..","..###..",".#####.",".#####.",".#####.","..###.."],
+tool:["##...##","#.....#","##...##",".#####.","..###..","..###..","..###.."],
+ware:["#######","#..#..#","#..#..#","#######","#.....#","#.....#","#######"],
+door:[".#####.",".#...#.",".#...#.",".#..##.",".#...#.",".#...#.",".#####."],
+bed:["#......","#......","###....","#######","#######","#.....#","#.....#"],
+x:["#.....#",".#...#.","..#.#..","...#...","..#.#..",".#...#.","#.....#"],
+bang:[".##.",".##.",".##.",".##.","....",".##."],plus:[".##.",".##.","####","####",".##.",".##."],me:["#####",".###.","..#.."],H:["#...#","#...#","#####","#...#","#...#"]};
+const TP={
+d:["..hhhh..",".hhhhhh.",".sesses.",".ssssss.","..bbbb..","sbbbbbbs","sbbbbbbs","..bbbb.."],
+u:["..hhhh..",".hhhhhh.",".hhhhhh.",".shhhhs.","..bbbb..","sbbbbbbs","sbbbbbbs","..bbbb.."],
+r:["..hhhh..",".hhhhhh.",".hhsses.",".hsssss.","..bbbb..","..bbsb..","..bbsss.","..bbbb.."],
+ld:[["..l..l..",".ll..l.."],["..l..l..","..l..ll."]],lr:[["..l..l..",".l....l."],["...ll...","...ll..."]]};
+function widen(rows){const o=[];rows.map(r=>r.slice(0,4)+r[3]+r[4]+r.slice(4)).forEach((r,i)=>{o.push(r);if(i===3||i===6)o.push(r);});return o;}
+function mkFrame(rows,pal){const h=rows.length,w=rows[0].length,c=mkc(w+2,h+2),g=c.getContext('2d'),at=(i,j)=>j>=0&&j<h&&i>=0&&i<w&&rows[j][i]!=='.';
+  for(let j=-1;j<=h;j++)for(let i=-1;i<=w;i++){if(at(i,j)){g.fillStyle=pal.w||pal[rows[j][i]];g.fillRect(i+1,j+1,1,1);}else if(at(i-1,j)||at(i+1,j)||at(i,j-1)||at(i,j+1)){g.fillStyle=pal.w?'#bbb':OUT;g.fillRect(i+1,j+1,1,1);}}
+  return c;}
+function flip(c){const o=mkc(c.width,c.height),g=o.getContext('2d');g.translate(c.width,0);g.scale(-1,1);g.drawImage(c,0,0);return o;}
+function mkSpr(pal,big){const o={};for(const d of ['d','u','r'])o[d]=[0,1].map(f=>{let rows=TP[d].concat(TP[d==='r'?'lr':'ld'][f]);if(big)rows=widen(rows);return mkFrame(rows,pal);});o.l=o.r.map(flip);return o;}
+const SK='#f0c9a0',EY='#22222a';
+const SPR={job:{
+  cop:mkSpr({h:'#1c2a4a',s:SK,e:EY,b:'#2f4a8a',l:'#1a2440'}),nurse:mkSpr({h:'#f4f4f4',s:SK,e:EY,b:'#e8a8b8',l:'#f0f0f0'}),
+  mech:mkSpr({h:'#e0a030',s:SK,e:EY,b:'#c9762a',l:'#4a4a52'}),ath:mkSpr({h:'#5a3a22',s:SK,e:EY,b:'#d0392b',l:'#22252b'}),
+  civ:mkSpr({h:'#4a3a2a',s:SK,e:EY,b:'#5f9a7a',l:'#3a4a6a'})},
+  z:[mkSpr({h:'#3a3f2a',s:'#8fae6f',e:'#e03030',b:'#6a5a48',l:'#3d3a44'}),mkSpr({h:'#2a2a2a',s:'#a8c088',e:'#ff5040',b:'#8a8f6a',l:'#4a4438'}),mkSpr({h:'#2f3524',s:'#6f8a54',e:'#ff2020',b:'#4a3a3a',l:'#2a2830'},true),
+    mkSpr({h:'#a01818',s:'#d8d0c0',e:'#200000',b:'#8a3a3a',l:'#3a2a2a'}),mkSpr({h:'#6a6a2a',s:'#c8b84a',e:'#402000',b:'#8a9a3a',l:'#5a5a2a'},true),
+    mkSpr({h:'#1f4a44',s:'#6fc0a8',e:'#f0ff60',b:'#2f6a5a',l:'#1f3a3a'}),mkSpr({h:'#120c1c',s:'#3a3050',e:'#ffe040',b:'#221a30',l:'#161020'})],
+  zw:[mkSpr({w:'#fff'}),mkSpr({w:'#fff'}),mkSpr({w:'#fff'},true),mkSpr({w:'#fff'}),mkSpr({w:'#fff'},true),mkSpr({w:'#fff'}),mkSpr({w:'#fff'})],car:{}};
+function carSpr(col,broken){
+  const key=col+broken;if(SPR.car[key])return SPR.car[key];
+  const c=mkc(18,10),g=c.getContext('2d'),B=broken?'#5a4a3c':col;
+  g.fillStyle=OUT;g.fillRect(1,0,16,10);g.fillRect(0,1,18,8);
+  g.fillStyle='#0c0c0e';g.fillRect(3,0,3,1);g.fillRect(12,0,3,1);g.fillRect(3,9,3,1);g.fillRect(12,9,3,1);
+  g.fillStyle=B;g.fillRect(1,1,16,8);
+  g.fillStyle='rgba(255,255,255,.25)';g.fillRect(1,1,16,1);g.fillStyle='rgba(0,0,0,.25)';g.fillRect(1,8,16,1);g.fillRect(5,2,6,6);
+  g.fillStyle=broken?'#3a3a3a':'#9fd0e8';g.fillRect(11,2,2,6);g.fillRect(3,2,1,6);
+  g.fillStyle=broken?'#444':'#ffe27a';g.fillRect(16,2,1,2);g.fillRect(16,6,1,2);
+  g.fillStyle=broken?'#442':'#d03030';g.fillRect(1,2,1,2);g.fillRect(1,6,1,2);
+  if(broken){g.fillStyle='#2a2018';g.fillRect(13,3,2,1);g.fillRect(7,6,3,1);g.fillRect(14,5,1,2);}
+  return SPR.car[key]=c;
+}
+let gctx=null;
+function stamp(x,y){if(!gctx)return;const X=Math.round(x*SC),Y=Math.round(y*SC);gctx.fillStyle='#5e1212';gctx.fillRect(X-2,Y-1,5,3);gctx.fillRect(X-1,Y-2,3,5);gctx.fillStyle='#7c1a1a';for(let i=0;i<4;i++)gctx.fillRect(X+ri(-4,4),Y+ri(-4,4),1,1);}
+
+/* ---------- world ---------- */
+function split(x,y,w,h,o){
+  const cw=w>=7&&R()<.8,ch=h>=7&&R()<.8;
+  if(cw&&(!ch||R()<.5)){const k=ri(3,w-4);split(x,y,k,h,o);split(x+k+1,y,w-k-1,h,o);}
+  else if(ch){const k=ri(3,h-4);split(x,y,w,k,o);split(x,y+k+1,w,h-k-1,o);}
+  else{const ix=w>4&&R()<.4?1:0,iy=h>4&&R()<.4?1:0;o.push([x+(R()<.5?ix:0),y+(R()<.5?iy:0),w-ix,h-iy]);}
+}
+function gen(){
+  grid=new Uint8Array(MW*MH);builds=[];
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)grid[y*MW+x]=(x%12<2||y%12<2)?0:2;
+  const tw=BT.map((b,i)=>[i,b.w]);
+  for(let by=0;by<8;by++)for(let bx=0;bx<8;bx++){
+    const ox=2+bx*12,oy=2+by*12,r=R();
+    if(r<.1){for(let y=0;y<10;y++)for(let x=0;x<10;x++)grid[(oy+y)*MW+ox+x]=3;continue;}
+    if(r<.16)continue;
+    const q=[];split(ox+1,oy+1,8,8,q);
+    for(const a of q){
+      if(R()<.1)continue;
+      const t=BT[wpick(tw)],tx=a[0],ty=a[1];
+      for(let y=0;y<a[3];y++)for(let x=0;x<a[2];x++)grid[(ty+y)*MW+tx+x]=1;
+      builds.push({tx,ty,tw:a[2],th:a[3],x0:tx*T,y0:ty*T,x1:(tx+a[2])*T,y1:(ty+a[3])*T,cx:(tx+a[2]/2)*T,cy:(ty+a[3]/2)*T,h:rnd(t.h[0],t.h[1]),t,searched:false,looted:false,left:[],stock:t.k==='gas'?40:0,bar:t.k==='house'?160:100,brk:false});
+    }
+  }
+  ground=mkc(MW*G,MH*G);
+  const g=gctx=ground.getContext('2d'),px=(x,y,c)=>{g.fillStyle=c;g.fillRect(x,y,1,1);};
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const v=grid[y*MW+x],X=x*G,Y=y*G;
+    if(v===0){g.fillStyle='#34373d';g.fillRect(X,Y,G,G);for(let i=0;i<5;i++)px(X+ri(0,15),Y+ri(0,15),R()<.5?'#3d4047':'#2b2e33');
+      g.fillStyle='#b9ad6a';if(x%12===1&&y%12>=2&&y%2)g.fillRect(X-1,Y+3,2,10);if(y%12===1&&x%12>=2&&x%2)g.fillRect(X+3,Y-1,10,2);
+      if(R()<.03){g.fillStyle='#26282c';g.fillRect(X+5,Y+5,6,6);g.fillStyle='#44474d';g.fillRect(X+6,Y+6,4,4);}
+      if(R()<.04){const a=X+ri(2,10),b=Y+ri(2,10);px(a,b,'#22242a');px(a+1,b+1,'#22242a');px(a+2,b+1,'#22242a');px(a+3,b+2,'#22242a');}}
+    else if(v===3){g.fillStyle='#3e5a32';g.fillRect(X,Y,G,G);for(let i=0;i<7;i++){const a=X+ri(0,14),b=Y+ri(1,15);px(a,b,'#55793f');px(a,b-1,R()<.5?'#55793f':'#2f4827');}
+      if(R()<.14){const a=X+3,b=Y+2;g.fillStyle='rgba(0,0,0,.3)';g.fillRect(a+1,b+3,10,9);g.fillStyle='#1f3a22';g.fillRect(a+1,b,8,10);g.fillRect(a,b+1,10,8);g.fillStyle='#2f5a30';g.fillRect(a+2,b+1,5,5);g.fillStyle='#4a7a3c';g.fillRect(a+3,b+2,2,2);}
+      else if(R()<.06){px(X+7,Y+7,'#e8d86a');px(X+10,Y+4,'#e8e8e8');}}
+    else{g.fillStyle='#5d5c59';g.fillRect(X,Y,G,G);g.fillStyle='#4c4b48';g.fillRect(X+15,Y,1,G);g.fillRect(X,Y+15,G,1);g.fillStyle='#69686a';g.fillRect(X,Y,15,1);
+      if(R()<.12){const a=X+ri(2,11),b=Y+ri(2,11);px(a,b,'#444340');px(a+1,b+1,'#444340');px(a+1,b+2,'#444340');}
+      if(v===2&&R()<.03){g.fillStyle=OUT;g.fillRect(X+5,Y+5,6,6);g.fillStyle='#7a5a3a';g.fillRect(X+6,Y+6,4,4);px(X+7,Y+7,'#9a7a52');}}
+  }
+  for(const b of builds){const X=b.tx*G,Y=b.ty*G,W=b.tw*G,H=b.th*G,c=b.t.c,k=b.t.k;
+    g.fillStyle='rgba(0,0,0,.35)';g.fillRect(X+3,Y+3,W,H);
+    g.fillStyle=OUT;g.fillRect(X,Y,W,H);
+    g.fillStyle=c[2];g.fillRect(X+1,Y+1,W-2,H-6);
+    g.fillStyle=c[1];
+    if(k==='house')for(let j=Y+3;j<Y+H-6;j+=3)g.fillRect(X+1,j,W-2,1);
+    else if(k==='ware')for(let i=X+4;i<X+W-1;i+=4)g.fillRect(i,Y+1,1,H-6);
+    else{g.fillRect(X+3,Y+3,W-6,1);g.fillRect(X+3,Y+H-8,W-6,1);g.fillRect(X+3,Y+3,1,H-10);g.fillRect(X+W-4,Y+3,1,H-10);}
+    g.fillStyle='rgba(255,255,255,.22)';g.fillRect(X+1,Y+1,W-2,1);g.fillRect(X+1,Y+1,1,H-6);
+    if(k!=='house')for(let i=0;i<(W*H>4000?2:1);i++)if(R()<.7){const a=X+ri(4,W-11),q=Y+ri(4,H-14);g.fillStyle=OUT;g.fillRect(a,q,6,5);g.fillStyle='#9a9ea3';g.fillRect(a+1,q+1,4,3);g.fillStyle='#5a5e63';g.fillRect(a+2,q+2,2,1);}
+    g.fillStyle=c[0];g.fillRect(X+1,Y+H-5,W-2,4);g.fillStyle=c[1];g.fillRect(X+1,Y+H-5,W-2,1);
+    g.fillStyle='#9fd0e8';for(let i=X+4;i<X+W-5;i+=6)g.fillRect(i,Y+H-3,2,2);
+    const dx=X+(W>>1)-2;g.fillStyle=OUT;g.fillRect(dx-1,Y+H-5,6,4);g.fillStyle='#3a2a1e';g.fillRect(dx,Y+H-4,4,3);
+    const cx=X+(W>>1),cy=Y+(H>>1)-2;g.fillStyle='#111';g.fillRect(cx-6,cy-6,13,13);bmp(g,IC[k],cx-3,cy-3,'#fff');
+  }
+  mini=document.createElement('canvas');mini.width=MW;mini.height=MH;
+  const m=mini.getContext('2d');
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const v=grid[y*MW+x];m.fillStyle=v===0?'#1c1d20':v===1?'#77736a':v===3?'#263a22':'#2e2e2c';m.fillRect(x,y,1,1);}
+}
+function solid(x,y){const tx=Math.floor(x/T),ty=Math.floor(y/T);return tx<0||ty<0||tx>=MW||ty>=MH||grid[ty*MW+tx]===1;}
+function free(x,y,r){return !(solid(x-r,y-r)||solid(x+r,y-r)||solid(x-r,y+r)||solid(x+r,y+r));}
+function moveE(e,dx,dy,r){let m=0;if(free(e.x+dx,e.y,r)){e.x+=dx;m++;}if(free(e.x,e.y+dy,r)){e.y+=dy;m++;}return m;}
+function los(a,b){const d=hyp(b.x-a.x,b.y-a.y),n=Math.ceil(d/14);for(let i=1;i<n;i++){if(solid(a.x+(b.x-a.x)*i/n,a.y+(b.y-a.y)*i/n))return false;}return true;}
+function spotNear(p,d0,d1,r){for(let i=0;i<30;i++){const a=R()*6.283,d=rnd(d0,d1),x=p.x+Math.cos(a)*d,y=p.y+Math.sin(a)*d;if(free(x,y,r))return{x,y};}return null;}
+function spotAny(r,avoid,ad){for(let i=0;i<200;i++){const x=rnd(T,(MW-1)*T),y=rnd(T,(MH-1)*T);if(free(x,y,r)&&(!avoid||hyp(x-avoid.x,y-avoid.y)>ad))return{x,y};}return{x:49*T,y:49*T};}
+function roadSpot(avoid){for(let i=0;i<300;i++){const tx=ri(1,MW-2),ty=ri(1,MH-2);if(grid[ty*MW+tx]===0){const x=tx*T+T/2,y=ty*T+T/2;if(hyp(x-avoid.x,y-avoid.y)>160)return{x,y,v:tx%12<2&&ty%12>=2};}}return{x:50*T,y:60*T,v:true};}
+
+/* ---------- party / storage ---------- */
+function mkEq(j){const e=Object.assign({w:0,a:0,gun:false,light:false},JOBS[j].eq);e.wd=WEAP[e.w].dur;return e;}
+function wd(k){const i=k.indexOf(':');return i>0?+k.slice(i+1):WEAP[+k[1]].dur;}
+function setW(c,n,d){c.eq.w=n;c.eq.wd=d;}
+function wtxt(n,d){return WEAP[n].n+(n?' '+d+'/'+WEAP[n].dur:'');}
+function wear(c){
+  if(c.eq.w<1)return;
+  if(--c.eq.wd<=0){const nm=WEAP[c.eq.w].n;setW(c,0,0);SFX.brk();msg('💥 '+(c===S.p?'':c.name+tr('の'))+nm+tr('が壊れた！'));
+    let bi=-1,bn=0;S.gear.forEach((k,i)=>{if(k[0]==='w'&&+k[1]>bn){bn=+k[1];bi=i;}});
+    if(bi>=0){const k=S.gear.splice(bi,1)[0];setW(c,+k[1],wd(k));msg((c===S.p?'':c.name+tr('は'))+tr('予備の')+WEAP[c.eq.w].n+tr('に持ち替えた'));}
+    S.hudT=0;}
+  else if(c===S.p&&c.eq.wd===8)msg('⚠ '+WEAP[c.eq.w].n+tr('が壊れそうだ'));
+}
+function party(){return[S.p].concat(S.cs);}
+function hasJob(j){return S.p.job===j||S.cs.some(c=>c.job===j);}
+function used(){const I=S.inv;return I.food+I.water+I.band+I.fuel+I.parts+S.gear.length;}
+function cap(){let n=12+(S.p.job==='ath'?4:0);for(const c of S.cs)n+=6+(c.job==='ath'?4:0);return n;}
+function gname(k){return k==='gun'?tr('拳銃'):k==='light'?tr('ライト'):k[0]==='w'?WEAP[+k[1]].n:ARM[+k[1]].n;}
+function who(c){return c===S.p?'':'→'+c.name;}
+function gainGear(k){
+  const t=k[0],n=+k[1];
+  if(k==='gun'||k==='light'){
+    for(const c of party())if(!c.eq[k]){c.eq[k]=true;return'★'+gname(k)+who(c);}
+    if(S.gear.includes(k)){if(k==='gun'){S.ammo+=5;return tr('弾5');}return'';}
+    if(used()<cap()){S.gear.push(k);return gname(k)+tr('(保管)');}return null;}
+  if(t==='w'){const d=wd(k);
+    for(const c of party())if(n>c.eq.w){const old=c.eq.w,od=c.eq.wd;setW(c,n,d);if(old>0)gainGear('w'+old+':'+od);return'★'+gname(k)+who(c);}
+    for(const c of party())if(n===c.eq.w&&c.eq.wd<d*.5){setW(c,n,d);return gname(k)+tr('(新品に交換)')+who(c);}
+    if(used()<cap()-2){S.gear.push('w'+n+':'+d);return gname(k)+tr('(予備)');}
+    return'';}
+  for(const c of party())if(n>c.eq.a){const old=c.eq.a;c.eq.a=n;if(old>0)gainGear('a'+old);return'★'+gname(k)+who(c);}
+  return'';
+}
+function give(k){
+  const I=S.inv;
+  if(k==='ammo'){const n=ri(4,8);S.ammo+=n;return tr('弾')+n;}
+  if(k in I){if(used()>=cap())return null;I[k]++;return CN[k];}
+  return gainGear(k);
+}
+function takeLoot(o,keys,title){
+  const got=[],left=[];
+  for(const k of keys){const g=give(k);if(g===null)left.push(k);else if(g)got.push(g);}
+  o.left=left;if(got.length)SFX.get();
+  msg(title+tr('：')+(got.length?got.join(tr('、')):left.length?'':tr('何もなかった'))+(left.length?tr('　🎒満杯で')+left.length+tr('個残した'):''));
+}
+function roll(tbl,n){const o=[];for(let i=0;i<n;i++)if(R()<.8*Math.min(1.2,S.D.loot))o.push(wpick(tbl));return o;}
+
+/* ---------- game state ---------- */
+function newGame(dk,job,q){
+  document.body.classList.remove('cut');gen();q=!!q;
+  const D=Object.assign({},DIFF[dk]),ts=q?4:1,st={x:(12*ri(1,7)+1)*T,y:(12*ri(1,7)+1)*T},J=JOBS[job];
+  if(q){D.dec*=1.5;D.n+=tr('・クイック');}
+  S={psx:VW/2,psy:VH/2,dk,D,q,ts,rk:dk+(q?'_q':''),DAY:240/ts,T1:1080/ts,T2:1200/ts,hT:1200/ts,radio:dk==='easy',wr:false,pres:0,prT:8,alertT:0,pj:[],booms:[],evT:q?35:rnd(110,160),drop:null,sos:null,horde:null,dz0:0,time:0,thr:1,over:false,paused:false,sys:false,zs:[],cs:[],sv:[],cars:[],fx:[],tr:[],hz:2,hgF:false,fire:true,kp:0,lz:null,heli:null,cut:false,esc:0,chT:0,order:'auto',hits:[],warn:[],grT:3,nearZ:999,tok:null,spT:0,svT:50,desT:30,hudT:0,tgT:0,target:null,search:null,rest:false,hurt:0,noise:0,flash:0,
+    inv:Object.assign({food:1,water:1,band:0,fuel:0,parts:0},J.items),gear:[],ammo:J.ammo||0,
+    p:{x:st.x,y:st.y,r:10,name:tr('自分'),job,hp:100,mhp:100,food:85,water:85,fat:0,hum:50,kills:0,lvl:1,eq:mkEq(job),face:0,cd:0,swing:0,car:null}};
+  for(let i=0;i<Math.round(40*D.sp);i++){const s=spotAny(10,st,440);S.zs.push(mkZ(s.x,s.y));}
+  for(let i=0;i<9;i++){const s=spotAny(10,st,260);S.sv.push(mkSv(s.x,s.y));}
+  const cc=['#8a2f2a','#2f4f8a','#c9c9c9','#3a3a3a','#7a7a3a','#2f6a4a'];
+  for(let i=0;i<46;i++){const s=roadSpot(st),br=R()<.55;
+    S.cars.push({x:s.x,y:s.y,ang:(s.v?Math.PI/2:0)+rnd(-.25,.25)+(R()<.5?Math.PI:0),spd:0,hp:br?0:rnd(40,100),fuel:R()<.35?0:rnd(3,28),broken:br,need:br?ri(1,2):0,searched:false,left:[],col:pick(cc)});}
+  if(q){S.inv.food+=2;S.inv.water+=2;S.inv.band+=1;if(S.p.eq.w<1)setW(S.p,1,WEAP[1].dur);}
+  if(!S.radio){const pr={police:0,ware:1,store:2,tool:3},c=builds.filter(b=>hyp(b.cx-st.x,b.cy-st.y)>350).sort((a,b)=>(pr[a.t.k]??4)-(pr[b.t.k]??4)+R()*2.5-1.25);for(let i=0;i<3&&i<c.length;i++)c[i].radio=true;}
+  cam.x=st.x;cam.y=st.y;
+  $('log').innerHTML='';msg(J.ic+J.n+tr('として目覚めた。生き延びろ。'));if(!S.radio)msg(tr('📻 無線機を探せ（ミニマップの紫の印）。なければ救助は来ない'));
+}
+const ZT=[{hp:40,s:[42,62],d:9,r:10},{hp:28,s:[92,112],d:6,r:9},{hp:170,s:[36,44],d:20,r:14},{hp:30,s:[66,78],d:5,r:9},{hp:90,s:[32,38],d:12,r:13},{hp:35,s:[46,56],d:7,r:9},{hp:45,s:[118,132],d:11,r:9}];
+function mkZ(x,y,k){
+  const D=S.D,m=S.time/60*D.ramp*S.ts,r=R();
+  if(k===undefined){k=0;const tb=[[m>5,.05+m*.005,2],[m>8,.07,5],[m>6,.07,4],[m>3,.07,3],[S.night&&m>4,.13,6],[m>1.5,.2+m*.01,1]];
+    let acc=0;for(const e of tb){if(!e[0])continue;acc+=e[1];if(r<acc){k=e[2];break;}}}
+  const t=ZT[k],z={k,hp:t.hp,spd:rnd(t.s[0],t.s[1]),dmg:t.d,r:t.r};
+  z.hp*=D.zhp*(1+m*.04);z.dmg*=D.zdmg*(1+m*.03);z.spd*=1+Math.min(.2,m*.008);z.x=x;z.y=y;z.cd=0;z.wa=R()*6.28;z.wt=0;z.fl=0;z.ox=rnd(-9,9);z.oy=rnd(-9,9);z.face=0;z.hunt=0;return z;
+}
+function mkSv(x,y){return{x,y,r:10,name:pick(NAMES),inj:R()<.25,job:wpick([['civ',5],['cop',1],['nurse',1.2],['mech',1.2],['ath',1.2]]),deb:R()<.35?pick(Object.keys(DEB)):null,temp:wpick([['brave',1],['calm',1.4],['timid',.9]])};}
+
+/* ---------- sound ---------- */
+let AC=null,ng=null,mute=false;try{mute=localStorage.getItem('ld_mute')==='1';}catch(e){}
+function au(){if(AC){if(AC.state==='suspended'&&!mute)AC.resume();return;}try{AC=new(window.AudioContext||window.webkitAudioContext)();ng=AC.createBuffer(1,AC.sampleRate*.5,AC.sampleRate);const d=ng.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}catch(e){AC=null;}}
+function tone(f,d,type,v,f2){if(mute||!AC)return;try{const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);}catch(e){}}
+function noise(d,v,fq){if(mute||!AC)return;try{const t=AC.currentTime,n=AC.createBufferSource(),g=AC.createGain(),f=AC.createBiquadFilter();n.buffer=ng;f.type='lowpass';f.frequency.value=fq;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);n.connect(f);f.connect(g);g.connect(AC.destination);n.start(t);n.stop(t+d);}catch(e){}}
+const SFX={hit(){noise(.08,.22,900);tone(140,.08,'square',.07,70);},kill(){noise(.16,.3,420);},shot(){noise(.2,.5,3200);tone(220,.12,'sawtooth',.14,50);},hurt(){tone(110,.25,'sawtooth',.22,45);},
+  get(){tone(660,.07,'square',.05);setTimeout(()=>tone(990,.09,'square',.05),70);},lvl(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2,'triangle',.13),i*90));},
+  groan(v){tone(rnd(70,95),.7,'sawtooth',v,rnd(48,62));},bang(){noise(.12,.35,300);tone(70,.12,'sine',.25,40);},brk(){noise(.45,.5,600);},warn(){tone(300,.25,'square',.06,200);},scream(){tone(900,.55,'sawtooth',.1,420);tone(1300,.5,'square',.04,600);},spit(){noise(.12,.14,1800);}};
+
+/* ---------- BGM (人間性で曲調が変わる) ---------- */
+const BG={next:0,step:0};
+const PROG={hi:[[60,64,67],[55,59,62],[57,60,64],[53,57,60]],mid:[[57,60,64],[57,60,64],[53,57,60],[52,56,59]],lo:[[45,48,51],[45,48,51],[46,49,52],[44,47,50]]};
+function bn(m,t,d,type,v,det){try{const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=440*Math.pow(2,(m-69)/12)*(det||1);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0008,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.03);}catch(e){}}
+function bk(t,v){try{const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(40,t+.12);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.14);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.16);}catch(e){}}
+function bh(t,v){try{const n=AC.createBufferSource(),g=AC.createGain(),f=AC.createBiquadFilter();n.buffer=ng;f.type='highpass';f.frequency.value=6000;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.04);n.connect(f);f.connect(g);g.connect(AC.destination);n.start(t);n.stop(t+.05);}catch(e){}}
+function bgTick(){
+  if(!AC||mute||!S||S.over||S.sys||AC.state!=='running'){BG.next=0;return;}
+  const now=AC.currentTime;if(BG.next<now)BG.next=now+.06;
+  const h=S.p.hum,mood=h>=60?'hi':h>30?'mid':'lo',bpm=(mood==='lo'?80:mood==='hi'?100:92)+({easy:0,normal:6,hard:14}[S.dk])+Math.min(24,S.thr*2),sd=60/bpm/4;
+  while(BG.next<now+.25){const st=BG.step%64,ch=PROG[mood][st>>4],i=st&15,t=BG.next,nt=S.night;
+    if(i%4===0)bn(ch[0]-12,t,sd*3.6,'triangle',.1);
+    if(i===6||i===14)bn(ch[0]-12+(mood==='lo'?1:7),t,sd*1.6,'triangle',.07);
+    if(i%8===0)bk(t,nt?.1:.16);
+    if(!nt||mood==='hi'){if(i%2===0)bn(ch[[0,1,2,1,0,2,1,2][i>>1]]+12,t,sd*1.7,'square',.03,mood==='lo'?1.015:1);}
+    else if(i%8===4)bn(ch[2]+12,t,sd*7,'sine',.045,mood==='lo'?1.02:1);
+    if(mood==='hi'&&i===0&&(st>>4)%2===0)bn(ch[2]+24,t,sd*12,'sine',.03);
+    if(mood==='lo'&&i===8)bn(ch[0]+6,t,sd*8,'sawtooth',.018);
+    if(mood!=='hi'&&i%4===2)bh(t,.03);if(S.thr>=4&&i%2===1)bh(t,.015);if(S.heli&&i%4===0)bh(t,.04);
+    BG.next+=sd;BG.step++;}
+}
+setInterval(bgTick,90);
+
+/* ---------- messages ---------- */
+function msg(t){const l=$('log'),d=el('div',null,t);l.appendChild(d);while(l.children.length>4)l.firstChild.remove();setTimeout(()=>{d.style.opacity=0;setTimeout(()=>d.remove(),700);},3800);}
+function fxT(x,y,t,c){S.fx.push({x,y,t,c,a:1});}
+function levelFx(n){const e=$('lv');$('lvN').textContent=tr('戦闘Lv ')+(n-1)+' → '+n;$('lvD').textContent=tr('攻撃力 +10%　最大体力 +5　体力回復');e.classList.remove('go');void e.offsetWidth;e.classList.add('go');S.flash=.6;SFX.lvl();}
+
+/* ---------- combat ---------- */
+function dmgMul(){const p=S.p;return(1+.1*(p.lvl-1))*(p.hum<=30?1.2:1)*(p.fat>=80?.75:1);}
+function hurtZ(z,d,a){
+  if(z.dead)return;if(z.k===6&&z.stun)d*=1.5;z.hp-=d;z.fl=.12;if(z.hp<=0)SFX.kill();else SFX.hit();moveE(z,Math.cos(a)*7,Math.sin(a)*7,z.r);
+  if(z.hp<=0){z.dead=true;const p=S.p;p.kills++;S.kp+=[50,80,200,120,150,130,160][z.k];stamp(z.x,z.y);if(z.k===4)explode(z);
+    const nl=1+Math.floor(Math.sqrt(p.kills/3));
+    if(nl>p.lvl){p.lvl=nl;p.mhp+=5;p.hp=Math.min(p.mhp,p.hp+15);levelFx(nl);}}
+}
+function explode(z){
+  SFX.brk();S.booms.push({x:z.x,y:z.y,t:.4});const p=S.p;
+  if(p.car){if(hyp(p.x-z.x,p.y-z.y)<64)p.car.hp-=10;}
+  else if(!p.inside){if(hyp(p.x-z.x,p.y-z.y)<64)hurtP(22*S.D.zdmg,z);for(const c of S.cs)if(hyp(c.x-z.x,c.y-z.y)<64)c.hp-=16*(1-ARM[c.eq.a].def);}
+  for(const o of S.zs)if(o!==z&&!o.dead&&hyp(o.x-z.x,o.y-z.y)<64)hurtZ(o,40,Math.atan2(o.y-z.y,o.x-z.x));
+}
+function coneLit(z){
+  const p=S.p;if(p.inside)return false;const d=hyp(z.x-p.x,z.y-p.y),a=Math.atan2(z.y-p.y,z.x-p.x);
+  if(p.car)return d<480&&Math.abs(angd(a,p.car.ang))<.42;
+  if(p.eq.light&&d<270*vm()&&Math.abs(angd(a,p.face))<.5)return true;
+  for(const c of S.cs)if(c.eq.light){const q=hyp(z.x-c.x,z.y-c.y);if(q<200&&Math.abs(angd(Math.atan2(z.y-c.y,z.x-c.x),c.face))<.45)return true;}
+  return false;
+}
+function hurtP(d,z){const p=S.p;d*=1-ARM[p.eq.a].def;p.hp-=d;S.hurt=.35;SFX.hurt();if(z)S.hits.push({a:Math.atan2(z.y-p.y,z.x-p.x),t:.9});S.rest=false;if(S.search){S.search=null;msg(tr('探索が中断された'));}}
+function vm(){return S.p.hum>=70?1.3:1;}
+function scoreNow(){return Math.round((S.time*10+S.kp)*(.5+S.p.hum/100));}
+function lit(z){
+  if(!S.night)return true;const p=S.p,d=hyp(z.x-p.x,z.y-p.y),a=Math.atan2(z.y-p.y,z.x-p.x);
+  if(p.car)return d<120||(d<480&&Math.abs(angd(a,p.car.ang))<.42);
+  if(d<95*vm()||(p.eq.light&&d<270*vm()&&Math.abs(angd(a,p.face))<.5))return true;
+  for(const c of S.cs){const q=hyp(z.x-c.x,z.y-c.y);if(q<45||(c.eq.light&&q<200&&Math.abs(angd(Math.atan2(z.y-c.y,z.x-c.x),c.face))<.45))return true;}
+  return false;
+}
+const MARC=1.4,GARC=.55;
+function attack(auto){
+  const p=S.p;if(p.cd>0||p.car||p.inside)return;
+  const w=WEAP[p.eq.w],dm=dmgMul();let h=0,gt=null,gd=340;
+  for(const z of S.zs){const d=hyp(z.x-p.x,z.y-p.y);if(d>gd&&d>w.range+z.r)continue;
+    const a=Math.abs(angd(Math.atan2(z.y-p.y,z.x-p.x),p.face));
+    if(d<w.range+z.r&&a<MARC){hurtZ(z,w.dmg*dm,p.face);if(++h>=w.cl)break;}
+    else if(a<GARC&&d<gd&&lit(z)){gd=d;gt=z;}}
+  if(h){S.rest=false;p.cd=w.cd;p.swing=.15;p.fat+=.4;wear(p);return;}
+  if(auto)return;
+  S.rest=false;
+  if(S.fire&&p.eq.gun&&S.ammo>0&&gt&&los(p,gt)){
+    S.ammo--;hurtZ(gt,55*dm*(p.job==='cop'?1.3:1),Math.atan2(gt.y-p.y,gt.x-p.x));
+    S.tr.push({x1:p.x,y1:p.y,x2:gt.x,y2:gt.y,t:.09});SFX.shot();p.cd=.42;S.noise=2.5;
+  }else{p.cd=w.cd;p.swing=.15;p.fat+=.2;}
+}
+
+/* ---------- events ---------- */
+const DROP=[['food',3],['water',3],['band',2],['ammo',2],['parts',1],['fuel',1],['a2',.5],['w3',.5],['gun',.4],['light',.5]];
+function interAt(p,d0,d1){const c=[];for(let i=1;i<=7;i++)for(let j=1;j<=7;j++){const q={x:(12*i+1)*T,y:(12*j+1)*T},d=hyp(q.x-p.x,q.y-p.y);if(d>d0&&d<d1)c.push(q);}return c.length?pick(c):null;}
+function startEvent(){
+  if(S.drop&&S.horde&&S.sos)return;
+  const p=S.p,k=wpick([['drop',S.drop?0:1.2],['horde',S.horde?0:1],['sos',S.sos?0:1]]);
+  if(k==='drop'){const q=interAt(p,420,1100);if(!q)return;S.drop={x:q.x+rnd(-20,20),y:q.y+rnd(-20,20),t:S.q?75:150,left:null,cd:0};
+    for(let i=0;i<5;i++){const z=spotNear(S.drop,40,140,12);if(z)S.zs.push(mkZ(z.x,z.y));}SFX.warn();msg(tr('📦 物資が投下された！（橙の印）ゾンビも集まっている'));}
+  else if(k==='horde'){const d=pick([[0,tr('東')],[Math.PI/2,tr('南')],[Math.PI,tr('西')],[-Math.PI/2,tr('北')]]);S.horde={a:d[0],t:S.q?7:12};SFX.warn();msg('⚠ '+d[1]+tr('から大群が接近中！'));}
+  else{const q=interAt(p,480,1100);if(!q)return;const sv=mkSv(q.x+18,q.y+18);sv.inj=false;S.sv.push(sv);S.sos={s:sv,t:S.q?65:110};
+    for(let i=0;i<4;i++){const z=spotNear(sv,50,130,12);if(z)S.zs.push(mkZ(z.x,z.y));}SFX.warn();msg(tr('🆘 救難信号だ！（水色の印）誰かが助けを求めている'));}
+}
+function tickEvents(dt){
+  const p=S.p,D=S.D;
+  S.evT-=dt;if(S.evT<=0&&!S.heli){S.evT=S.q?rnd(38,58):rnd(130,190);startEvent();}
+  if(S.drop){const d=S.drop;d.t-=dt;d.cd-=dt;
+    if(!p.car&&!p.inside&&d.cd<=0&&hyp(p.x-d.x,p.y-d.y)<30){takeLoot(d,d.left||roll(DROP,7),tr('投下物資'));if(!d.left.length)S.drop=null;else d.cd=8;}
+    else if(d.t<=0){S.drop=null;msg(tr('投下物資は荒らされてしまった'));}}
+  if(S.horde){S.horde.t-=dt;if(S.horde.t<=0){const a=S.horde.a,n=Math.round((S.q?10:14)*D.sp);
+    for(let i=0;i<n;i++){const b=a+rnd(-.5,.5),dd=rnd(480,700),x=p.x+Math.cos(b)*dd,y=p.y+Math.sin(b)*dd,q=free(x,y,12)?{x,y}:spotNear({x,y},0,140,12);if(q){const z=mkZ(q.x,q.y);z.hunt=30;S.zs.push(z);}}
+    S.horde=null;msg(tr('大群が押し寄せてきた！'));}}
+  if(S.sos){const o=S.sos;o.t-=dt;if(!S.sv.includes(o.s))S.sos=null;else if(o.t<=0){S.sv=S.sv.filter(v=>v!==o.s);S.sos=null;addHum(-2);msg('🆘 '+TX.sos());}}
+}
+
+/* ---------- interaction ---------- */
+function bDist(b,p){return hyp(Math.max(b.x0-p.x,0,p.x-b.x1),Math.max(b.y0-p.y,0,p.y-b.y1));}
+function findTarget(){
+  const p=S.p;
+  if(p.car){for(const b of builds)if(b.stock>0&&p.car.fuel<59&&Math.abs(b.cx-p.x)<300&&bDist(b,p)<70)return{k:'gas',o:b,l:tr('給油')};return{k:'exit',l:tr('降りる')};}
+  if(p.inside)return{k:'out',l:tr('外へ')};
+  let best=null,bd=60;
+  for(const s of S.sv){const d=hyp(s.x-p.x,s.y-p.y);if(d<bd){bd=d;best={k:'sv',o:s,l:tr('話す')};}}
+  if(best)return best;bd=58;
+  for(const c of S.cars){const d=hyp(c.x-p.x,c.y-p.y);if(d<bd){bd=d;best={k:'car',o:c,l:tr('乗り物')};}}
+  if(best)return best;bd=26;
+  for(const b of builds){if((b.searched&&b.brk)||Math.abs(b.cx-p.x)>260||Math.abs(b.cy-p.y)>260)continue;const d=bDist(b,p);if(d<bd){bd=d;best=b.searched?{k:'in',o:b,l:tr('隠れる')}:{k:'b',o:b,l:b.looted?tr('回収'):tr('調べる')};}}
+  return best;
+}
+function interact(){
+  if(!S||S.over||S.paused||S.sys||S.cut)return;const t=findTarget();if(!t)return;S.rest=false;
+  if(t.k==='exit')return exitCar();
+  if(t.k==='out')return leave();
+  if(t.k==='in'){S.p.inside=t.o;S.pres=0;S.prT=8;S.search=null;msg(t.o.t.n+tr('に立てこもった（バリケード耐久')+Math.round(t.o.bar)+tr('）。中で休むと回復2倍'));return;}
+  if(t.k==='gas'){const c=S.p.car,n=Math.min(60-c.fuel,t.o.stock);c.fuel+=n;t.o.stock-=n;msg(tr('スタンドで')+Math.round(n)+tr('L給油した')+(t.o.stock<=0?tr('（タンクは空になった）'):''));return;}
+  if(t.k==='b'){if(!S.search)S.search={o:t.o,t:0,dur:t.o.looted?.6:2.4+t.o.tw*t.o.th*.05};}
+  else if(t.k==='car')carDlg(t.o);
+  else svDlg(t.o);
+}
+function finishSearch(b){
+  let keys=b.left;const p=S.p;
+  if(!b.looted){b.looted=true;const k=b.t.k;
+    keys=roll(b.t.loot,ri(2,3)+(b.tw*b.th>20?2:0)+(k==='ware'?2:0));
+    if(b.radio&&!S.radio){S.radio=true;SFX.lvl();msg(tr('📻 無線機を見つけた！救助隊と連絡が取れる'));}
+    if(k==='hosp'){p.hp=p.mhp;for(const c of S.cs)c.hp=c.mhp;msg(tr('病院の設備で全員を手当てした（全回復）'));}
+    if(k==='house'){b.safe=true;msg(tr('この民家は隠れ家に使える（そばで休むと回復2倍）'));}
+    if(R()<(k==='ware'?.5:.2)*S.D.sp){const n=ri(1,k==='ware'?3:2);for(let i=0;i<n;i++){const s=spotNear(p,40,90,10);if(s)S.zs.push(mkZ(s.x,s.y));}msg(tr('物音…！中にゾンビがいた'));}
+    else if(R()<.22)S.found=k;
+  }
+  takeLoot(b,keys,b.t.n);
+  if(S.found){const jb={hosp:'nurse',police:'cop',tool:'mech',gas:'mech'}[S.found],q=spotNear(p,22,44,10)||p,sv=mkSv(q.x,q.y);if(jb&&R()<.7)sv.job=jb;S.found=null;S.sv.push(sv);msg(tr('中に生存者が隠れていた！'));svDlg(sv);}
+  if(!b.left.length){b.searched=true;const m=mini.getContext('2d');m.fillStyle=b.safe?'#3d6a8a':'#3c3a36';m.fillRect(b.tx,b.ty,b.tw,b.th);}
+}
+function dlg(title,body,opts){
+  S.paused=true;joy=null;$('joy').style.display='none';$('dT').textContent=title;$('dB').textContent=body;const o=$('dO');o.textContent='';
+  for(const q of opts){const b=el('button','btn',q.t);b.style.width='100%';if(q.s)b.appendChild(el('small',null,q.s));
+    b.dataset.k=o.children.length+1;b.disabled=!!q.dis;b.onclick=()=>{$('dlg').classList.add('hide');S.paused=false;q.f&&q.f();S.hudT=0;};o.appendChild(b);}
+  $('dlg').classList.remove('hide');
+}
+function carDlg(c){
+  const I=S.inv,p=S.p,cans=Math.min(I.fuel,Math.floor((60-c.fuel)/10+.5)),cost=hasJob('mech')?1:Math.max(1,c.need);
+  dlg(tr('乗り捨てられた車'),(c.broken?tr('故障中（修理パーツ')+cost+tr('個必要）'):tr('走行可能　耐久')+Math.round(c.hp)+'%')+tr('\n燃料 ')+Math.round(c.fuel)+'L / 60L',[
+    {t:tr('乗る'),dis:c.broken||c.fuel<=0,s:c.broken?tr('壊れている'):c.fuel<=0?tr('燃料がない'):tr('仲間も同乗する'),f:()=>{p.car=c;c.spd=0;msg(tr('エンジンがかかった'));}},
+    {t:tr('修理する'),dis:(!c.broken&&c.hp>=99)||I.parts<cost,s:F('修理パーツ{0}個使用（所持{1}）','Uses {0} repair part(s) (have {1})',cost,I.parts),f:()=>{I.parts-=cost;c.broken=false;c.need=0;c.hp=100;msg(tr('車を修理した'));}},
+    {t:tr('給油する'),dis:cans<1,s:tr('燃料缶 所持')+I.fuel+tr('（1缶10L）'),f:()=>{c.fuel=Math.min(60,c.fuel+cans*10);I.fuel-=cans;msg(cans+tr('缶給油した'));}},
+    {t:tr('車内を漁る'),dis:c.searched&&!c.left.length,s:c.searched&&!c.left.length?tr('調査済み'):'',f:()=>{let k=c.left;if(!c.searched){c.searched=true;k=roll([['fuel',2],['parts',2],['food',2],['water',2],['band',1],['w1',.6],['light',.6],['ammo',.5]],2);if(c.fuel>=12&&R()<.5){c.fuel-=10;k.push('fuel');}}takeLoot(c,k,tr('車内'));}},
+    {t:tr('閉じる')}]);
+}
+function exitCar(){const p=S.p,c=p.car;if(!c)return;const s=spotNear(c,24,34,10)||c;p.x=s.x;p.y=s.y;p.car=null;c.spd=0;for(const m of S.cs){const q=spotNear(c,26,60,10)||c;m.x=q.x;m.y=q.y;}}
+function leave(){const p=S.p;if(!p.inside)return;p.inside=null;for(const m of S.cs){const q=spotNear(p,22,50,10)||p;m.x=q.x;m.y=q.y;}}
+function addHum(n){const p=S.p;p.hum=clamp(p.hum+n,0,100);fxT(p.x,p.y,tr('人間性')+(n>0?'+':'')+n,n>0?'#7fd4ff':'#ff7a6a');}
+const TX={
+ hi:{brave:[tr('「まだ人間がいたか。腕には覚えがある、連れて行け」'),tr('「一人で十体は片づけた。あんたの背中、預かってやる」'),tr('「逃げ回るのは性に合わない。戦える相手を探してた」')],
+     calm:[tr('「…人間、だよな。頼む、一緒に行かせてくれ」'),tr('「静かにしてる。足は引っぱらない。だから」'),tr('「一人だと、眠るのが怖いんだ」')],
+     timid:[tr('「う、撃たないで…！ 何でもするから、置いていかないで」'),tr('「もう一人は嫌なんだ…お願い…」'),tr('「あ、あなた人間？ 本当に？ …よかった…」')],
+     inj:[tr('「足をやられた…まだ歩ける、歩けるから」'),tr('「噛まれたんじゃない、切っただけだ。信じてくれ」'),tr('「血が止まらないんだ。包帯、持ってないか」')]},
+ join:n=>pick([n+tr('が隣に並んだ。足音が、ひとつ増えた。'),tr('手を差し出した。')+n+tr('は少し迷って、握り返した。'),n+tr('の名前を、忘れないように二度呼んだ。')]),
+ refuse:n=>n+tr('は私の目を見て、後ずさった。「…あんたとは行けない」'),
+ share:n=>pick([tr('食料と水を渡した。')+n+tr('は何度も頭を下げて、角を曲がっていった。'),tr('分け合えるうちは、まだ人間だ。そう思うことにした。'),n+tr('は「生きろよ」と言った。言われる側でいられた。')]),
+ leave:()=>pick([tr('振り返らなかった。振り返れなかった。'),tr('背中に声が刺さった。聞こえないふりは、うまくなった。'),tr('助けない理由を、歩きながら数えた。')]),
+ rob:n=>pick([tr('荷物を奪った。')+n+tr('は何も言わなかった。その目を、たぶん忘れない。'),tr('生きるためだ。そう言い聞かせる声が、自分のものに聞こえなかった。')]),
+ abandon:n=>pick([n+tr('を置いてきた。名前を呼ぶ声が、角を曲がるまで続いた。'),tr('「待ってくれ」と')+n+tr('は言った。私は歩く速さを変えなかった。')]),
+ dead:n=>pick([n+tr('が倒れた。名前を呼んだが、もう届かなかった。'),n+tr('を守れなかった。数えるのは、もうやめた。')]),
+ starve:n=>n+tr('は黙って立ち上がり、去っていった。責める資格は、私にない。'),
+ weak:n=>n+tr('は眠るように動かなくなった。水の一口も、渡せなかった。'),
+ fear:n=>n+tr('は夜のうちに消えていた。私の顔を、恐れていたのだと思う。'),
+ sos:()=>tr('信号が途絶えた。間に合わなかったのか、行かなかったのか。'),
+ zone:[[tr('腹が減った、と思った。何に対してなのか、考えないようにした。'),tr('鏡があっても、もう覗かないだろう。視界の端が赤い。'),null,null],   // 下がって入ったとき
+       [null,tr('赤が少し引いた。まだ、戻れる。'),tr('赤が引いていく。人の顔を、思い出せる。'),tr('まだ誰かの名前を覚えている。それだけで、夜が少し明るい。')]], // 上がって入ったとき
+ hungry:tr('飢えが、考える順番を変えていく。'),
+ end:h=>h>=70?tr('最後まで、誰かの名前を呼べた。'):h>=30?tr('人であることを、ぎりぎり手放さなかった。'):tr('生き延びた何かが、私の形をしていた。')};
+function hz(h){return h<15?0:h<30?1:h<70?2:3;}
+function abandon(c){c.gone=true;S.cs=S.cs.filter(x=>x!==c);S.sv.push({x:c.x,y:c.y,r:10,name:c.name,inj:false,job:c.job,deb:c.deb,temp:c.temp,left:true});addHum(-15);msg(TX.abandon(c.name));}
+function refuses(s){if(S.p.hum<=30&&R()<.5){S.sv=S.sv.filter(v=>v!==s);msg(TX.refuse(s.name));return true;}return false;}
+function joinSv(s,ok){
+  const p=S.p,I=S.inv,J=JOBS[s.job];if(!ok&&refuses(s))return;S.sv=S.sv.filter(v=>v!==s);
+  if(s.inj)I.band--;const mh=s.deb==='weak'?60:100;
+  S.cs.push({x:s.x,y:s.y,r:10,name:s.name,job:s.job,deb:s.deb,temp:s.temp,hp:mh,mhp:mh,eq:mkEq(s.job),cd:0,gcd:0,food:80,water:80,starve:0,face:0,sw:0});addHum(10);
+  S.ammo+=J.ammo||0;for(const k in J.items)for(let i=0;i<J.items[k];i++)give(k);if(s.job==='civ')give(R()<.5?'food':'water');
+  msg(TX.join(s.name)+tr('（')+J.n+tr('）'));
+}
+function svDlg(s){
+  if(s.left){dlg(tr('生存者：')+s.name,tr('「…置いていったくせに、今さら何の用だ」\n返す言葉は、持っていなかった。'),[{t:tr('立ち去る')}]);return;}
+  const p=S.p,I=S.inv,J=JOBS[s.job],rm=()=>{S.sv=S.sv.filter(v=>v!==s);};
+  if(!s.line)s.line=pick(s.inj?TX.hi.inj:TX.hi[s.temp]);
+  dlg(tr('生存者：')+s.name,s.line+
+    '\n'+J.ic+J.n+tr('：')+J.d+tr('\n性格【')+TEMP[s.temp].n+tr('】')+TEMP[s.temp].d+(s.deb?'\n⚠'+DEB[s.deb].n+tr('：')+DEB[s.deb].d:'')+tr('\n所持枠+')+(s.job==='ath'?10:6)+tr('。空腹・渇きはストレージから自動で補給'),[
+    S.cs.length>=4?{t:tr('誰かと入れ替えて仲間にする'),s:(s.inj?tr('包帯1を使う ／ '):'')+tr('置き去り-15、仲間+10'),dis:s.inj&&I.band<1,f:()=>{
+      dlg(tr('誰と入れ替える？'),s.name+tr('を仲間にする代わりに、1人をここに置いていく。'),S.cs.map(c=>({t:c.name+tr('（')+JOBS[c.job].n+tr('／')+TEMP[c.temp].n+(c.deb?tr('／')+DEB[c.deb].n:'')+tr('）'),s:tr('体力')+Math.round(c.hp)+'/'+c.mhp+tr('　装備は持って行かれる'),f:()=>{if(refuses(s))return;abandon(c);joinSv(s,true);}})).concat([{t:tr('やめる')}]));}}
+    :{t:tr('仲間にする'),s:(s.inj?tr('包帯1を使う ／ '):'')+tr('人間性+10'),dis:s.inj&&I.band<1,f:()=>joinSv(s)},
+    {t:tr('物資を分けて別れる'),s:tr('食料1・水1を渡す ／ 人間性+6'),dis:I.food<1||I.water<1,f:()=>{I.food--;I.water--;rm();addHum(6);
+      msg(TX.share(s.name));if(R()<.5){const g=give(pick(['ammo','parts','band']));if(g)msg(tr('お礼に')+g+tr('を置いていった'));}}},
+    {t:tr('見捨てて立ち去る'),s:tr('人間性-7'),f:()=>{rm();addHum(-7);msg(TX.leave());}},
+    {t:tr('物資を奪う'),s:tr('人間性-18'),f:()=>{rm();addHum(-18);msg(TX.rob(s.name));takeLoot({},roll([['food',3],['water',3],['band',1],['ammo',1]],3),tr('奪った'));}}]);
+}
+function useItem(k,tg){
+  if(!S||S.over)return false;const p=S.p,I=S.inv;if(I[k]<1)return false;
+  if(k==='food'){const c=tg||p;if(c.food>97)return false;I.food--;c.food=Math.min(100,c.food+38);}
+  else if(k==='water'){const c=tg||p;if(c.water>97)return false;I.water--;c.water=Math.min(100,c.water+42);}
+  else if(k==='band'){const c=tg||p;if(c.hp>=c.mhp)return false;I.band--;c.hp=Math.min(c.mhp,c.hp+40*(p.job==='nurse'?1.5:1));}
+  else return false;
+  S.hudT=0;return true;
+}
+
+/* ---------- bag ---------- */
+function openBag(){if(!S||S.over||S.sys||S.paused||S.cut)return;S.bagMsg='';S.paused=true;joy=null;$('joy').style.display='none';renderBag();$('bag').classList.remove('hide');}
+function closeBag(){if(S)for(const x of S.cs)x.ask=false;$('bag').classList.add('hide');if(S){S.paused=false;S.hudT=0;}}
+function mbtn(t,f,dis,cls){const b=el('button','mb'+(cls?' '+cls:''),t);b.disabled=!!dis;b.onclick=()=>{S.bagMsg='';f();renderBag();};return b;}
+function equip(i,c){
+  const k=S.gear[i];
+  if(k==='gun'||k==='light'){if(c.eq[k])return;c.eq[k]=true;S.gear.splice(i,1);return;}
+  if(k[0]==='w'){const old=c.eq.w,od=c.eq.wd;setW(c,+k[1],wd(k));if(old>0)S.gear[i]='w'+old+':'+od;else S.gear.splice(i,1);return;}
+  const s=k[0],old=c.eq[s];c.eq[s]=+k[1];if(old>0)S.gear[i]=s+old;else S.gear.splice(i,1);
+}
+function unequip(c,s){
+  if(used()>=cap()){S.bagMsg=tr('ストレージが満杯で外せない（先に何か捨てる）');return;}
+  if(s==='gun'||s==='light'){if(c.eq[s]){c.eq[s]=false;S.gear.push(s);}}
+  else if(s==='w'){if(c.eq.w>0){S.gear.push('w'+c.eq.w+':'+c.eq.wd);setW(c,0,0);}}
+  else if(c.eq[s]>0){S.gear.push(s+c.eq[s]);c.eq[s]=0;}
+}
+function regenOf(c){if(c.food<=0||c.water<=0)return 0;const h=S.p.hum;return((c.food/100)*(c.water/100)*(S.rest&&c===S.p?2:1)+(hasJob('nurse')?.3*(c.food+c.water)/200:0))*(h>=70?1.5:h>=50?1.2:h<30?.7:1);}
+function renderBag(){
+  const o=$('bagB'),p=S.p,I=S.inv,P=party();o.textContent='';
+  $('bagT').textContent=tr('🎒 ストレージ ')+used()+' / '+cap();
+  if(S.bagMsg){const n=el('div',null,'⚠ '+S.bagMsg);n.style.cssText='color:#ff8a7a;font-size:12px;margin:4px 0';o.appendChild(n);}
+  o.appendChild(el('h3',null,tr('アイテム（弾 ')+S.ammo+tr('発は枠を使わない）')));
+  const lab={food:tr('🍖 食料（満腹+38）'),water:tr('💧 水（水分+42）'),band:tr('🩹 包帯（体力+')+(p.job==='nurse'?60:40)+tr('）'),fuel:tr('⛽ 燃料缶（車に10L）'),parts:tr('🔧 修理パーツ')};
+  for(const k in lab){const r=el('div','row'+(I[k]<1?' dim':''));r.appendChild(el('span',null,lab[k]+' ×'+I[k]));
+    if(k==='food'||k==='water'||k==='band')for(const c of P)r.appendChild(mbtn(c===p?tr('自分に'):c.name+tr('に'),()=>useItem(k,c),I[k]<1||(k==='band'?c.hp>=c.mhp:c[k]>97),'g'));
+    r.appendChild(mbtn(tr('捨てる'),()=>{I[k]--;},I[k]<1));o.appendChild(r);}
+  o.appendChild(el('h3',null,tr('保管中の装備（タップした相手に装備）')));
+  if(!S.gear.length)o.appendChild(el('div','row dim')).appendChild(el('span',null,tr('なし')));
+  S.gear.forEach((k,i)=>{const r=el('div','row');r.appendChild(el('span',null,gname(k)+(k[0]==='w'?tr('（攻撃')+WEAP[+k[1]].dmg+tr('・耐久')+wd(k)+'/'+WEAP[+k[1]].dur+tr('）'):k[0]==='a'?tr('（軽減')+ARM[+k[1]].def*100+tr('%）'):'')));
+    for(const c of P)r.appendChild(mbtn(c===p?tr('自分'):c.name,()=>equip(i,c),(k==='gun'||k==='light')&&c.eq[k],'g'));
+    r.appendChild(mbtn(tr('捨てる'),()=>{S.gear.splice(i,1);}));o.appendChild(r);});
+  o.appendChild(el('h3',null,tr('メンバーの装備（タップで外して保管）')));
+  for(const c of P){const m=el('div','mem'),J=JOBS[c.job];
+    m.appendChild(el('b',null,J.ic+(c===p?tr('自分'):c.name)));
+    m.appendChild(el('span',null,tr('　')+J.n+(c.temp?tr('／')+TEMP[c.temp].n:'')+(c.deb?tr('／⚠')+DEB[c.deb].n:'')+tr('　体力')+Math.max(0,Math.round(c.hp))+'/'+c.mhp));
+    m.appendChild(el('div',null,tr('満腹')+Math.round(c.food)+tr('　水分')+Math.round(c.water)+tr('　自然回復 +')+regenOf(c).toFixed(2)+tr('/秒')));
+    const sl=el('div','sl');
+    sl.appendChild(mbtn(tr('武器：')+wtxt(c.eq.w,c.eq.wd),()=>unequip(c,'w'),c.eq.w<1));
+    if(c.eq.w>0&&c.eq.wd<WEAP[c.eq.w].dur)sl.appendChild(mbtn(tr('🔧武器を修理（パーツ1）'),()=>{S.inv.parts--;c.eq.wd=WEAP[c.eq.w].dur;msg(WEAP[c.eq.w].n+tr('を修理した'));},S.inv.parts<1,'g'));
+    sl.appendChild(mbtn(tr('防具：')+ARM[c.eq.a].n,()=>unequip(c,'a'),c.eq.a<1));
+    sl.appendChild(mbtn(tr('銃：')+(c.eq.gun?tr('拳銃'):tr('なし')),()=>unequip(c,'gun'),!c.eq.gun));
+    sl.appendChild(mbtn(tr('ライト：')+(c.eq.light?tr('あり'):tr('なし')),()=>unequip(c,'light'),!c.eq.light));
+    if(c!==p)sl.appendChild(mbtn(c.ask?tr('本当に置いていく（人間性-15）'):tr('置いていく'),()=>{if(!c.ask){for(const x of S.cs)x.ask=false;c.ask=true;return;}abandon(c);},false,c.ask?'r':''));
+    m.appendChild(sl);o.appendChild(m);}
+}
+
+/* ---------- input ---------- */
+const keys={};let joy=null,atkHeld=false;
+function bagToggle(){if($('bag').classList.contains('hide'))openBag();else closeBag();}
+function pauseToggle(){if(!S||S.over)return;if(S.sys)$('bResume').click();else if(!$('bag').classList.contains('hide'))closeBag();else sysPause();}
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const c=e.code;
+  if(['Space','Enter','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(c))e.preventDefault();
+  if(e.repeat){return;}keys[c]=true;
+  const dn=c.startsWith('Digit')?+c.slice(5):c.startsWith('Numpad')?+c.slice(6):0;
+  if(S&&S.paused&&!$('dlg').classList.contains('hide')){if(dn>0){const b=$('dO').children[dn-1];if(b&&!b.disabled)b.click();}return;}
+  if(c==='Escape'){if(!$('help').classList.contains('hide')){$('help').classList.add('hide');return;}return pauseToggle();}
+  if(c==='KeyP'||c==='KeyE')interact();if(c==='KeyO'||c==='KeyR')toggleRest();if(c==='KeyL'||c==='KeyF')cycleOrder();
+  if(dn===1)quick('food');if(dn===2)quick('water');if(dn===3)quick('band');if(dn===4||c==='KeyI')bagToggle();if(dn===5||c==='KeyG')toggleFire();
+  if(c==='KeyM')$('bMute').click();if(c==='Equal'||c==='NumpadAdd'||c==='Semicolon')cam.zl=clamp(cam.zl+1,-1,3);if(c==='Minus'||c==='NumpadSubtract')cam.zl=clamp(cam.zl-1,-1,3);});
+addEventListener('keyup',e=>{keys[e.code]=false;});
+const mouse={x:0,y:0,t:-1e9,down:false,rdown:false};
+function aimOn(){return mouse.down||mouse.rdown||performance.now()-mouse.t<2500;}
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('wheel',e=>{cam.zl=clamp(cam.zl+(e.deltaY<0?1:-1),-1,3);},{passive:true});
+addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){mouse.x=e.clientX;mouse.y=e.clientY;mouse.t=performance.now();}});
+addEventListener('pointerup',e=>{if(e.pointerType==='mouse'){if(e.button===0)mouse.down=false;if(e.button===2)mouse.rdown=false;}});
+addEventListener('blur',()=>{mouse.down=mouse.rdown=false;});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button');if(b)b.blur();});
+cv.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'){au();mouse.x=e.clientX;mouse.y=e.clientY;mouse.t=performance.now();if(e.button===0)mouse.down=true;if(e.button===2)mouse.rdown=true;return;}
+  if(joy||!S||S.over||S.paused||S.sys)return;joy={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:0,y:0};try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  if(e.pointerType!=='mouse'){const j=$('joy');j.style.display='block';j.style.left=(e.clientX-55)+'px';j.style.top=(e.clientY-55)+'px';j.firstChild.style.transform='';}});
+cv.addEventListener('pointermove',e=>{if(!joy||e.pointerId!==joy.id)return;let dx=e.clientX-joy.ox,dy=e.clientY-joy.oy;const d=hyp(dx,dy);if(d>50){dx*=50/d;dy*=50/d;}joy.x=dx/50;joy.y=dy/50;$('joy').firstChild.style.transform=`translate(${dx}px,${dy}px)`;});
+const jend=e=>{if(joy&&e.pointerId===joy.id){joy=null;$('joy').style.display='none';}};
+cv.addEventListener('pointerup',jend);cv.addEventListener('pointercancel',jend);
+function tap(id,f){$(id).addEventListener('pointerdown',e=>{e.preventDefault();f();});}
+$('bAtk').addEventListener('pointerdown',e=>{e.preventDefault();atkHeld=true;});
+['pointerup','pointercancel','pointerleave'].forEach(n=>$('bAtk').addEventListener(n,()=>{atkHeld=false;}));
+function quick(k){if(S&&!S.paused&&!S.sys&&!S.cut)useItem(k);}
+function toggleRest(){au();if(!S||S.over||S.cut||S.p.car||S.paused||S.sys)return;S.rest=!S.rest;if(S.rest)S.search=null;}
+const ORD={auto:tr('お任せ'),atk:tr('攻撃'),evade:tr('回避')};
+function cycleOrder(){if(!S||S.over)return;S.order=S.order==='auto'?'atk':S.order==='atk'?'evade':'auto';msg(tr('仲間への指示：')+ORD[S.order]+(S.order==='auto'?tr('（性格に任せる）'):S.order==='atk'?tr('（全員で戦う）'):tr('（戦わず逃げる）')));S.hudT=0;}
+function toggleFire(){if(!S||S.over)return;S.fire=!S.fire;msg(S.fire?tr('🔫 銃を使う（自分と仲間）'):tr('🔫 銃を使わない（弾を温存）'));S.hudT=0;}
+tap('uGun',toggleFire);tap('bOrd',cycleOrder);tap('bAct',interact);tap('bRest',toggleRest);
+tap('bZi',()=>{cam.zl=clamp(cam.zl+1,-1,3);});tap('bZo',()=>{cam.zl=clamp(cam.zl-1,-1,3);});
+tap('uFood',()=>quick('food'));tap('uWater',()=>quick('water'));tap('uBand',()=>quick('band'));
+$('uBag').onclick=openBag;$('bagC').onclick=closeBag;
+function sysPause(){if(S&&!S.over&&!S.sys){S.sys=true;joy=null;atkHeld=false;$('joy').style.display='none';for(const k in keys)keys[k]=false;$('pause').classList.remove('hide');if(AC)AC.suspend();}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)sysPause();});
+addEventListener('pagehide',sysPause);addEventListener('blur',sysPause);
+$('bPause').onclick=sysPause;
+function setMute(m){mute=m;$('bMute').textContent=m?'🔇':'🔊';try{localStorage.setItem('ld_mute',m?'1':'0');}catch(e){}if(AC){if(m)AC.suspend();else AC.resume();}}
+$('bMute').onclick=()=>{au();setMute(!mute);};setMute(mute);
+$('bResume').onclick=()=>{$('pause').classList.add('hide');if(S)S.sys=false;if(AC&&!mute)AC.resume();};
+$('bGiveUp').onclick=()=>{$('pause').classList.add('hide');if(S){S.sys=false;$('dlg').classList.add('hide');$('bag').classList.add('hide');gameOver();}};
+function moveVec(){
+  let x=0,y=0;
+  if(joy){x=joy.x;y=joy.y;}
+  if(mouse.rdown&&S){const dx=mouse.x-S.psx,dy=mouse.y-S.psy,d=hyp(dx,dy);if(d>14){x+=dx/d;y+=dy/d;}}
+  if(keys.KeyW||keys.ArrowUp)y-=1;if(keys.KeyS||keys.ArrowDown)y+=1;if(keys.KeyA||keys.ArrowLeft)x-=1;if(keys.KeyD||keys.ArrowRight)x+=1;
+  const d=hyp(x,y);if(d>1){x/=d;y/=d;}
+  const c=Math.cos(cam.ang),s=Math.sin(cam.ang);return[x*c+y*s,-x*s+y*c];
+}
+
+/* ---------- update ---------- */
+function update(dt){
+  const p=S.p,D=S.D,I=S.inv;S.time+=dt;
+  const dayT=(S.time%S.DAY)/S.DAY,night=dayT>.6;S.night=night;S.alertT-=dt;tickEvents(dt);
+  const thr=1+Math.floor(S.time*D.ramp*S.ts/120);if(thr>S.thr){S.thr=thr;SFX.warn();msg(tr('⚠ 脅威Lv')+thr+tr('：ゾンビが増え、凶暴になっている'));}
+  const [mx,my]=moveVec(),mm=hyp(mx,my);
+  p.cd-=dt;p.swing-=dt;S.hurt-=dt;S.noise-=dt;S.flash-=dt;
+  p.hum=clamp(p.hum+((p.hum<60?Math.min(4,S.cs.length)*.015:0)-(p.food<=0||p.water<=0?.25:0)-(night&&!S.cs.length?.02:0))*dt,0,100);
+  {const z=hz(p.hum);if(z!==S.hz){const t=TX.zone[z>S.hz?1:0][z];S.hz=z;if(t)msg(t);}
+   const hg=p.food<=0||p.water<=0;if(hg&&!S.hgF)msg(TX.hungry);S.hgF=hg;}
+  if(!S.radio&&!S.wr&&S.time>=S.T1){S.wr=true;SFX.warn();msg(tr('遠くでヘリの音…📻無線機がないと合流できない（紫の印の建物を探せ）'));}
+  if(!S.lz&&S.radio&&S.time>=S.T1){S.lz=interAt(p,600,1500)||interAt(p,300,9999);S.hT=Math.max(S.T2,S.time+20);SFX.warn();msg(tr('📻「こちら救助隊。')+fmt(S.hT)+tr('に降下する」緑の点へ向かえ'));}
+  if(S.lz&&!S.heli&&S.time>=S.hT){S.heli={x:S.lz.x,y:S.lz.y-520,alt:50,st:'in'};msg(tr('🚁 救助ヘリが来た！合流地点へ急げ'));}
+  if(S.heli){const h=S.heli;
+    if(h.st==='in'){h.y+=110*dt;if(h.y>=S.lz.y){h.y=S.lz.y;h.st='down';}}
+    else if(h.st==='down'){h.alt-=22*dt;if(h.alt<=0){h.alt=0;h.st='wait';msg(tr('🚁 ヘリが着陸した。乗り込め！'));}}
+    else if(h.st==='wait'&&!p.car&&!p.inside&&hyp(p.x-h.x,p.y-h.y)<46){S.cut=true;S.esc=0;h.st='up';S.search=null;S.rest=false;msg(tr('ヘリに乗り込んだ！'));}
+    S.chT-=dt;if(S.chT<=0){S.chT=.11;const d=hyp(p.x-h.x,p.y-h.y);if(d<700)noise(.05,.14*(1-d/700),260);}}
+  p.food=Math.max(0,p.food-.30*D.dec*dt);p.water=Math.max(0,p.water-.42*D.dec*dt);
+  if(p.food<=0)p.hp-=1.2*dt;if(p.water<=0)p.hp-=1.8*dt;
+  for(const c of party())if(c.hp>0&&c.hp<c.mhp)c.hp=Math.min(c.mhp,c.hp+regenOf(c)*dt);
+  const moving=mm>.15&&!p.inside;
+  if(S.rest){if(moving)S.rest=false;else{let safe=p.inside?2:1;if(!p.inside)for(const b of builds)if(b.safe&&Math.abs(b.cx-p.x)<260&&bDist(b,p)<44){safe=2;break;}
+    p.fat=Math.max(0,p.fat-7*safe*(p.hum>=70?1.3:p.hum<=30?.8:1)*dt);}}
+  else p.fat=Math.min(100,p.fat+(p.car?.05:moving?.22:.08)*D.dec*(p.job==='ath'?.65:1)*dt);
+  if(p.fat>=100)p.hp-=.8*dt;
+  if(p.car){
+    const c=p.car;
+    if(moving&&c.fuel>0){const ta=Math.atan2(my,mx),d=angd(ta,c.ang);c.ang+=clamp(d,-3.4*dt,3.4*dt);c.spd=Math.min(250*mm,c.spd+200*dt);}
+    else c.spd*=Math.max(0,1-2.6*dt);
+    if(c.spd>4){const m=moveE(c,Math.cos(c.ang)*c.spd*dt,Math.sin(c.ang)*c.spd*dt,15);
+      if(m<2){if(c.spd>150)c.hp-=c.spd*.03;c.spd*=m?.9:.2;}
+      c.fuel=Math.max(0,c.fuel-c.spd/250*.5*(hasJob('mech')?.7:1)*dt);S.noise=Math.max(S.noise,.5);
+      if(c.fuel<=0&&!c.dry){c.dry=true;msg(tr('燃料切れだ'));}else if(c.fuel>0)c.dry=false;}
+    p.x=c.x;p.y=c.y;p.face=c.ang;
+    if(c.spd>60)for(const z of S.zs){if(hyp(z.x-c.x,z.y-c.y)<22+z.r){hurtZ(z,130*c.spd/250,c.ang);c.hp-=z.k===2?7:3;c.spd*=z.k===2?.6:.85;}}
+    if(c.hp<=0){c.hp=0;c.broken=true;c.need=2;msg(tr('車が壊れた！'));exitCar();}
+  }else if(p.inside){
+    const b=p.inside;if(b.bar<=0){b.brk=true;SFX.brk();msg(tr('バリケードが破られた！もうここには隠れられない'));leave();}
+    else{S.pres+=(1.1+(S.rest?2.6:0)+S.cs.length*.35+(S.cs.some(c=>c.deb==='loud')?1.8:0))*(night?1.3:1)*dt;
+      S.prT-=dt;if(S.prT<=0){S.prT=rnd(7,14);if(R()<.45){S.pres+=14;SFX.bang();msg(S.rest?tr('💤 イビキが外まで響いている…'):pick([tr('ガタッ…物音を立ててしまった'),tr('床が大きくきしんだ'),tr('何かを落としてしまった')]));}}
+      if(S.pres>=100){S.pres=35;S.alertT=14;SFX.warn();msg(tr('⚠ ゾンビに気づかれた！集まってくる'));const n=ri(3,5)+Math.floor(S.thr/3);for(let i=0;i<n;i++){const q=spotNear(p,150,330,12);if(q){const z=mkZ(q.x,q.y);z.hunt=16;S.zs.push(z);}}}}
+  }else{
+    if(moving){const sp=115*(p.job==='ath'?1.12:1)*(p.fat>=100?.5:p.fat>=80?.72:1)*(p.food<=0||p.water<=0?.85:1);moveE(p,mx*sp*dt,my*sp*dt,p.r);if(p.swing<=0&&!aimOn())p.face=Math.atan2(my,mx);}
+    if(aimOn()&&hyp(mouse.x-S.psx,mouse.y-S.psy)>6)p.face=Math.atan2(mouse.y-S.psy,mouse.x-S.psx);
+    attack(!(atkHeld||keys.Space||keys.Enter||mouse.down));
+  }
+  if(S.search){const b=S.search.o;if(bDist(b,p)>34||p.car)S.search=null;else{S.search.t+=dt;if(S.search.t>=S.search.dur){S.search=null;finishSearch(b);}}}
+  const m=S.time/60*D.ramp*S.ts;
+  S.spT-=dt;
+  if(S.spT<=0){S.spT=(1.5/D.sp)*(night?.55:1)/(1+m*.04);const cp=Math.min(180,(26+m*10)*D.sp*(night?1.3:1));
+    if(S.zs.length<cp){const s=spotNear(p,Math.max(VW,VH)/cam.zoom*.62+80,Math.max(VW,VH)/cam.zoom*.62+380,12);if(s)S.zs.push(mkZ(s.x,s.y));}}
+  S.svT-=dt;if(S.svT<=0){S.svT=rnd(60,100);if(S.sv.filter(v=>!v.left).length<10){const s=spotAny(10,p,500);S.sv.push(mkSv(s.x,s.y));}}
+  for(const c of S.cs){
+    if(c.hp<=0&&!c.gone){c.gone=true;msg(TX.dead(c.name));addHum(-3);stamp(c.x,c.y);continue;}
+    c.food=Math.max(0,c.food-.36*D.dec*(c.deb==='glut'?2:1)*dt);c.water=Math.max(0,c.water-.5*D.dec*(c.deb==='thirsty'?2:1)*dt);
+    if(c.food<40&&I.food>0){I.food--;c.food+=45;}
+    if(c.water<40&&I.water>0){I.water--;c.water+=45;}
+    if(c.hp<c.mhp*.35&&I.band>0){useItem('band',c);msg(c.name+tr('に包帯を使った'));}
+    if(c.food<=0||c.water<=0){c.hp-=dt;c.starve+=dt;if(!c.warn){c.warn=true;msg('⚠ '+c.name+tr('に与える食料・水がない'));}
+      if(c.starve>45){c.gone=true;msg(tr('「もう限界だ…」')+TX.starve(c.name));addHum(-4);}
+      else if(c.hp<=0){c.gone=true;msg(TX.weak(c.name));addHum(-3);}}
+    else{c.starve=0;c.warn=false;}
+  }
+  S.desT-=dt;if(S.desT<=0){S.desT=30;if(p.hum<25)for(const c of S.cs)if(R()<.15){c.gone=true;msg(TX.fear(c.name));}}
+  // companions
+  const cb=p.hum>=70?1.3:1,nc=S.cs.length;
+  for(let i=0;i<nc;i++){
+    const c=S.cs[i];if(c.gone)continue;
+    if(p.car||p.inside){c.x=p.x;c.y=p.y;continue;}
+    c.cd-=dt;c.gcd-=dt;if(c.sw>0)c.sw-=dt;
+    const fa=p.face+Math.PI+(i-(nc-1)/2)*.9,hx=p.x+Math.cos(fa)*46,hy=p.y+Math.sin(fa)*46,d=hyp(p.x-c.x,p.y-c.y);
+    if(d>900){const s=spotNear(p,30,60,10);if(s){c.x=s.x;c.y=s.y;}continue;}
+    let nz=null,nd=1e9;for(const z of S.zs){const q=hyp(z.x-c.x,z.y-c.y);if(q<nd){nd=q;nz=z;}}
+    let tx=hx,ty=hy,sp=d>200?170:125,go=hyp(hx-c.x,hy-c.y)>10;
+    const w=WEAP[c.eq.w];
+    const md=S.order==='atk'?'brave':S.order==='evade'?'timid':c.hp<c.mhp*.35?'timid':c.temp;
+    if(md==='timid'){
+      if(nz&&nd<(S.order==='evade'?160:120)){const a=Math.atan2(c.y-nz.y,c.x-nz.x)+(d>230?angd(Math.atan2(p.y-c.y,p.x-c.x),Math.atan2(c.y-nz.y,c.x-nz.x))*.7:0);tx=c.x+Math.cos(a)*60;ty=c.y+Math.sin(a)*60;sp=165;go=true;}
+    }else{
+      const eng=md==='brave'?(nd<(S.order==='atk'?260:210)&&d<340):(nd<80&&d<130);
+      if(nz&&eng){tx=nz.x;ty=nz.y;go=nd>w.range*.7+nz.r;}
+      if(nz&&nd<w.range+nz.r&&c.cd<=0){c.cd=w.cd+.35;c.face=Math.atan2(nz.y-c.y,nz.x-c.x);c.sw=.15;hurtZ(nz,Math.max(12,w.dmg*.8)*cb,c.face);wear(c);}
+      else if(nz&&S.fire&&c.eq.gun&&S.ammo>0&&c.gcd<=0&&nd>55&&nd<260&&lit(nz)&&los(c,nz)){c.gcd=1.5;S.ammo--;c.face=Math.atan2(nz.y-c.y,nz.x-c.x);hurtZ(nz,50*cb*(c.job==='cop'?1.3:1),c.face);S.tr.push({x1:c.x,y1:c.y,x2:nz.x,y2:nz.y,t:.09});SFX.shot();S.noise=2;}
+    }
+    if(go){const a=Math.atan2(ty-c.y,tx-c.x);if(c.sw<=0)c.face=a;const st=Math.min(sp*dt,hyp(tx-c.x,ty-c.y));moveE(c,Math.cos(a)*st,Math.sin(a)*st,c.r);}
+    // separation
+    for(let j=-1;j<i;j++){const o=j<0?p:S.cs[j];let dx=c.x-o.x,dy=c.y-o.y,q=hyp(dx,dy);if(q<24){if(q<.01){dx=R()-.5;dy=R()-.5;q=hyp(dx,dy);}const k=(24-q)/q*(j<0?1:.5);moveE(c,dx*k,dy*k,c.r);if(j>=0)moveE(o,-dx*k,-dy*k,o.r);}}
+  }
+  // zombies
+  S.warn.length=0;S.nearZ=999;for(const h of S.hits)h.t-=dt;S.hits=S.hits.filter(h=>h.t>0);
+  const sense0=(night?390:270)+(S.noise>0?220:0)+(S.alertT>0?250:0)+(S.cs.some(c=>c.deb==='loud')?90:0),far=Math.max(VW,VH)/cam.zoom+900,sense=p.inside&&!(S.alertT>0)?Math.min(sense0,150):sense0,hid=p.car||p.inside;
+  for(const z of S.zs){
+    if(z.dead)continue;z.cd-=dt;z.fl-=dt;
+    let t=p,td=hyp(p.x-z.x,p.y-z.y);
+    if(td>far){z.dead=true;continue;}
+    if(td<S.nearZ)S.nearZ=td;
+    if(!hid&&td<85&&S.warn.length<6){const a=Math.atan2(z.y-p.y,z.x-p.x);if(Math.abs(angd(a,p.face))>MARC)S.warn.push(a);}
+    if(!hid)for(const c of S.cs){if(c.gone)continue;const q=hyp(c.x-z.x,c.y-z.y);if(q<td){td=q;t=c;}}
+    let sp=z.spd*(night?1.15:1),hold=false;if(z.hunt>0)z.hunt-=dt;if(z.scT>0)z.scT-=dt;
+    if(z.k===6){if(!night){z.hp-=30*dt;z.fl=.05;if(z.hp<=0){z.dead=true;stamp(z.x,z.y);continue;}}z.stun=night&&coneLit(z);if(z.stun)sp*=.25;}
+    if(td<sense||z.hunt>0){
+      if(z.k===3&&!(z.scT>0)&&td<sense){z.scT=12;SFX.scream();S.noise=4;fxT(z.x,z.y,tr('ギャアアア！'),'#ff8a7a');for(const o of S.zs)if(hyp(o.x-z.x,o.y-z.y)<520)o.hunt=Math.max(o.hunt||0,7);}
+      if(z.k===5&&!(t===p&&hid)&&td<230&&los(z,t)){z.face=Math.atan2(t.y-z.y,t.x-z.x);if(z.cd<=0&&td>40){z.cd=2.2;S.pj.push({x:z.x,y:z.y,vx:Math.cos(z.face)*190,vy:Math.sin(z.face)*190,t:1.5,d:z.dmg,ox:z.x,oy:z.y});SFX.spit();}hold=td<150&&td>40;}
+      const reach=z.r+(t===p&&p.car?20:t.r)+4;
+      if(hold){}else if(td>reach){const a=Math.atan2(t.y+z.oy-z.y,t.x+z.ox-z.x);z.face=a;if(!moveE(z,Math.cos(a)*sp*dt,Math.sin(a)*sp*dt,z.r)){moveE(z,Math.cos(a+1.57)*sp*dt*.6,Math.sin(a+1.57)*sp*dt*.6,z.r);}}
+      else if(z.cd<=0){z.cd=1;
+        if(t===p){if(p.car){p.car.hp-=z.dmg*.5;S.hurt=.15;SFX.bang();}else if(p.inside){p.inside.bar-=z.dmg;SFX.bang();}else hurtP(z.dmg,z);}
+        else{t.hp-=z.dmg*.75*(1-ARM[t.eq.a].def);if(t.hp<=0){t.gone=true;msg(TX.dead(t.name));addHum(-3);stamp(t.x,t.y);if(t.eq.w>0&&used()<cap())S.gear.push('w'+t.eq.w+':'+t.eq.wd);if(t.eq.a>0&&used()<cap())S.gear.push('a'+t.eq.a);}}}
+    }else{z.wt-=dt;if(z.wt<=0){z.wt=rnd(1,4);z.wa=R()*6.28;z.mv=R()<.6;}if(z.mv){z.face=z.wa;moveE(z,Math.cos(z.wa)*sp*.4*dt,Math.sin(z.wa)*sp*.4*dt,z.r);}}
+  }
+  for(const j of S.pj){j.t-=dt;j.x+=j.vx*dt;j.y+=j.vy*dt;if(solid(j.x,j.y)){j.t=0;continue;}
+    if(hid){if(p.car&&hyp(p.x-j.x,p.y-j.y)<20){p.car.hp-=j.d*.5;j.t=0;}continue;}
+    if(hyp(p.x-j.x,p.y-j.y)<11){hurtP(j.d,{x:j.ox,y:j.oy});j.t=0;continue;}
+    for(const c of S.cs)if(hyp(c.x-j.x,c.y-j.y)<11){c.hp-=j.d*.75*(1-ARM[c.eq.a].def);j.t=0;break;}}
+  S.pj=S.pj.filter(j=>j.t>0);for(const b of S.booms)b.t-=dt;S.booms=S.booms.filter(b=>b.t>0);
+  const Z=S.zs;
+  for(let i=0;i<Z.length;i++){const a=Z[i];if(a.dead)continue;for(let j=i+1;j<Z.length;j++){const b=Z[j],dx=b.x-a.x;if(dx>24||dx<-24)continue;const dy=b.y-a.y;if(dy>24||dy<-24)continue;
+    const q=hyp(dx,dy),m=a.r+b.r-2;if(q<m&&q>.01&&!b.dead){const k=(m-q)/q*.5;moveE(a,-dx*k,-dy*k,a.r);moveE(b,dx*k,dy*k,b.r);}}}
+  S.grT-=dt;if(S.grT<=0){S.grT=rnd(1.8,4.5);if(S.nearZ<320)SFX.groan(.03+.12*(1-S.nearZ/320));}
+  S.zs=S.zs.filter(z=>!z.dead);S.cs=S.cs.filter(c=>!c.gone);
+  for(const f of S.fx){f.a-=dt*.7;f.z=(f.z||20)+30*dt;}S.fx=S.fx.filter(f=>f.a>0);
+  for(const t of S.tr)t.t-=dt;S.tr=S.tr.filter(t=>t.t>0);
+  S.tgT-=dt;if(S.tgT<=0){S.tgT=.12;S.target=findTarget();}
+  S.hudT-=dt;if(S.hudT<=0){S.hudT=.2;hud();}
+  if(p.hp<=0)gameOver();else if(p.hum<=0)gameOver('zombie');
+}
+function fmt(t){t=Math.floor(t);return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');}
+function humName(h){return h>=70?tr('高潔'):h>=45?tr('普通'):h>30?tr('荒み'):tr('冷酷');}
+function hud(){
+  const p=S.p,I=S.inv,J=JOBS[p.job];
+  $('bHp').style.width=clamp(p.hp/p.mhp*100,0,100)+'%';$('bFd').style.width=p.food+'%';$('bWt').style.width=p.water+'%';$('bFt').style.width=p.fat+'%';
+  $('bFt').style.background=p.fat>=80?'#e0457a':'#9a7fd0';
+  $('bHm').style.width=p.hum+'%';$('bHm').style.background=p.hum>=70?'#5fd0ff':p.hum>=30?'#8fbf7a':'#e03030';
+  $('score').textContent='SCORE '+scoreNow().toLocaleString()+' ×'+(.5+p.hum/100).toFixed(2);
+  $('info').textContent=(EN?`${J.ic}${J.n} Lv${p.lvl}  Kills ${p.kills}  Party ${S.cs.length}\nThreat Lv${S.thr}  Humanity ${Math.round(p.hum)} (${humName(p.hum)})\n${wtxt(p.eq.w,p.eq.wd)}${p.eq.gun?' + Pistol':''}${p.eq.light?'🔦':''}  Ammo ${S.ammo}\nArmor: ${ARM[p.eq.a].n}  ⛽${I.fuel} 🔧${I.parts}${p.inside?'\n🚪Barricade '+Math.max(0,Math.round(p.inside.bar))+'  👂Noise '+Math.round(S.pres)+'%':''}`:`${J.ic}${J.n} Lv${p.lvl}　撃破${p.kills}　仲間${S.cs.length}\n脅威Lv${S.thr}　人間性${Math.round(p.hum)}（${humName(p.hum)}）\n${wtxt(p.eq.w,p.eq.wd)}${p.eq.gun?'＋拳銃':''}${p.eq.light?'🔦':''}　弾${S.ammo}\n防具：${ARM[p.eq.a].n}　⛽${I.fuel}缶 🔧${I.parts}${p.inside?'\n🚪バリケード '+Math.max(0,Math.round(p.inside.bar))+'　👂気配 '+Math.round(S.pres)+'%':''}`);
+  $('info').style.whiteSpace='pre-line';
+  for(const [id,k] of [['uFood','food'],['uWater','water'],['uBand','band']]){const e=$(id);e.lastChild.textContent=I[k];e.classList.toggle('off',I[k]<1);}
+  {const g=$('uGun'),has=party().some(c=>c.eq.gun);g.lastChild.textContent=S.fire?tr('撃つ'):tr('温存');g.classList.toggle('off',!has);g.classList.toggle('full',has&&!S.fire);}
+  const u=used(),c=cap();$('uBag').lastChild.textContent=u+'/'+c;$('uBag').classList.toggle('full',u>=c);
+  $('clock').textContent=fmt(S.time);$('day').textContent=F('{0}日目 ','Day {0} ',Math.floor(S.time/S.DAY)+1)+(S.night?tr('🌙夜'):tr('☀昼'))+(S.heli?tr(' 🚁到着'):S.lz?' 🚁'+fmt(Math.max(0,S.hT-S.time)):S.radio?' 🚁'+fmt(Math.max(0,S.T2-S.time)):tr(' 📻未入手'));
+  const a=$('bAct'),t=S.search?{l:tr('探索中')}:S.target;a.textContent=t?t.l:'―';a.classList.toggle('on',!!t);
+  const ob=$('bOrd');ob.textContent=tr('指示\n')+ORD[S.order];ob.style.whiteSpace='pre-line';ob.className='ab'+(S.order==='auto'?'':' '+S.order);ob.style.opacity=S.cs.length?1:.4;
+  $('bRest').classList.toggle('on',S.rest);$('bRest').textContent=S.rest?tr('休憩中'):tr('休む');
+  const pr=$('prog');if(S.search){pr.style.display='block';pr.firstChild.style.width=(S.search.t/S.search.dur*100)+'%';}else pr.style.display='none';
+  const m=$('mm').getContext('2d');m.drawImage(mini,0,0);
+  m.fillStyle='#e8c84a';for(const c of S.cars)if(!c.broken)m.fillRect(c.x/T-.5,c.y/T-.5,2,2);
+  m.fillStyle='#5fd0ff';for(const s of S.sv)if(!s.left)m.fillRect(s.x/T-1,s.y/T-1,2,2);
+  const zr=S.night?100:500;m.fillStyle='#ff4a3a';for(const z of S.zs)if(hyp(z.x-p.x,z.y-p.y)<zr)m.fillRect(z.x/T,z.y/T,1,1);
+  const bl=Math.floor(S.time*2)&1;
+  if(!S.radio){m.fillStyle=bl?'#d080ff':'#8040b0';for(const b of builds)if(b.radio&&!b.looted)m.fillRect(b.tx+(b.tw>>1)-1,b.ty+(b.th>>1)-1,3,3);}
+  if(S.drop){m.fillStyle='#ffb04a';m.fillRect(S.drop.x/T-2,S.drop.y/T-2,4,4);}
+  if(S.sos&&bl){m.fillStyle='#7fe0ff';m.fillRect(S.sos.s.x/T-2,S.sos.s.y/T-2,5,5);}
+  if(S.lz&&(Math.floor(S.time*2)&1)){m.fillStyle='#7dff8a';m.fillRect(S.lz.x/T-2,S.lz.y/T-2,5,5);}
+  m.fillStyle='#fff';m.fillRect(p.x/T-1.5,p.y/T-1.5,3,3);
+}
+
+/* ---------- render (pixel art, top-down) ---------- */
+const lo=mkc(8,8),lg=lo.getContext('2d'),dkc=mkc(8,8),dk=dkc.getContext('2d');
+let K=2,lw=0,lh=0,ox=0,oy=0;
+function w2s(x,y){return[Math.round(x*SC)-ox,Math.round(y*SC)-oy];}
+function dirOf(a){const c=Math.cos(a),s=Math.sin(a);return Math.abs(c)>Math.abs(s)?(c>0?'r':'l'):(s>0?'d':'u');}
+function drawSpr(e,spr){
+  const q=w2s(e.x,e.y),mv=e.lx!==undefined&&hyp(e.x-e.lx,e.y-e.ly)>.15;e.lx=e.x;e.ly=e.y;
+  if(e.ph===undefined)e.ph=ri(0,1);
+  const im=spr[dirOf(e.face)][mv?(Math.floor(S.time*7)+e.ph)&1:0];
+  lg.fillStyle='rgba(0,0,0,.3)';lg.fillRect(q[0]-(im.width>>1)+1,q[1]+4,im.width-2,2);
+  lg.drawImage(im,q[0]-(im.width>>1),q[1]-im.height+5);return q;
+}
+function slash(q,a){lg.fillStyle='#fff';const c=Math.cos(a),s=Math.sin(a);for(let t=-2;t<=2;t++)lg.fillRect(Math.round(q[0]+c*8-s*t*1.6-c*Math.abs(t)),Math.round(q[1]-2+s*8+c*t*1.6-s*Math.abs(t)),1,1);}
+function hole(x,y,r){for(const f of [[1,.35],[.82,.5],[.62,1]]){dk.fillStyle='rgba(0,0,0,'+f[1]+')';dk.beginPath();dk.arc(x,y,r*f[0],0,7);dk.fill();}}
+function cone(x,y,ang,len,ha){const o=w2s(x,y);for(const f of [[1,.4],[.8,.6],[.6,1]]){dk.fillStyle='rgba(0,0,0,'+f[1]+')';dk.beginPath();dk.moveTo(o[0],o[1]);dk.arc(o[0],o[1],len*SC*f[0],ang-ha,ang+ha);dk.closePath();dk.fill();}}
+function drawDark(a,pd){
+  const p=S.p;dk.globalCompositeOperation='source-over';dk.clearRect(0,0,lw,lh);dk.fillStyle='rgba(3,5,14,'+a+')';dk.fillRect(0,0,lw,lh);
+  dk.globalCompositeOperation='destination-out';
+  hole(pd[0],pd[1],(p.car?120:95)*vm()*SC);
+  if(p.car)cone(p.x,p.y,p.car.ang,480,.42);
+  else if(!p.inside){if(p.eq.light)cone(p.x,p.y,p.face,270*vm(),.5);
+    for(const c of S.cs){const q=w2s(c.x,c.y);hole(q[0],q[1],40*SC);if(c.eq.light)cone(c.x,c.y,c.face,200,.45);}}
+  lg.drawImage(dkc,0,0);
+}
+let heliC=null;
+function heliSpr(){if(heliC)return heliC;const c=heliC=mkc(26,14),g=c.getContext('2d');g.fillStyle=OUT;g.fillRect(3,2,16,10);g.fillRect(18,5,8,4);g.fillRect(23,2,3,7);g.fillRect(4,12,14,2);
+  g.fillStyle='#55683f';g.fillRect(4,3,14,8);g.fillRect(18,6,7,2);g.fillRect(24,3,1,5);g.fillStyle='#6f8553';g.fillRect(4,3,14,2);g.fillStyle='#9fd0e8';g.fillRect(5,5,5,4);g.fillStyle='#d8f0ff';g.fillRect(5,5,2,1);g.fillStyle='#e03030';g.fillRect(12,6,3,3);g.fillStyle='#fff';g.fillRect(13,6,1,3);g.fillRect(12,7,3,1);g.fillStyle='#2a2a2e';g.fillRect(5,12,12,1);return c;}
+function render(){
+  const p=S.p,hid=p.car||p.inside||S.cut,rt=performance.now()/1000;
+  cam.x+=(p.x-cam.x)*.2;cam.y+=(p.y-cam.y)*.2;
+  K=clamp(Math.round(Math.min(VW,VH)/170)+cam.zl,2,8);cam.zoom=K*SC;
+  lw=Math.ceil(VW/K);lh=Math.ceil(VH/K);if(lo.width!==lw||lo.height!==lh){lo.width=lw;lo.height=lh;dkc.width=lw;dkc.height=lh;}
+  ox=Math.round(cam.x*SC-lw/2);oy=Math.round(cam.y*SC-lh*.54);
+  lg.imageSmoothingEnabled=false;lg.fillStyle='#08090a';lg.fillRect(0,0,lw,lh);lg.drawImage(ground,-ox,-oy);
+  const pd=w2s(p.x,p.y);S.psx=pd[0]*K;S.psy=(pd[1]-2)*K;const vis=e=>{const q=w2s(e.x,e.y);return q[0]>-24&&q[1]>-24&&q[0]<lw+24&&q[1]<lh+24;};
+  // building overlays
+  for(const b of builds){const bx=b.tx*G-ox,by=b.ty*G-oy,bw=b.tw*G,bh=b.th*G;if(bx>lw||by>lh||bx+bw<0||by+bh<0)continue;
+    let ic=null,col='#fff';
+    if(b.searched){lg.fillStyle='rgba(10,10,14,.45)';lg.fillRect(bx,by,bw,bh);
+      if(b.brk){ic=IC.x;col='#e0584a';}else if(b.safe){ic=IC.bed;col='#7fc4ff';}else if(b.stock>0){ic=IC.gas;col='#ffd35a';}else{ic=IC.door;col='#e8c060';}}
+    else if(b.looted){ic=IC.store;col='#ffb04a';}
+    const cx=bx+(bw>>1),cy=by+(bh>>1)-2;
+    if(ic){lg.fillStyle='#111';lg.fillRect(cx-6,cy-6,13,13);bmp(lg,ic,cx-3,cy-3,col);}
+    if(b.radio&&!b.looted&&!S.radio&&(Math.floor(rt*3)&1)){lg.fillStyle=OUT;lg.fillRect(cx+7,cy-8,5,5);lg.fillStyle='#d080ff';lg.fillRect(cx+8,cy-7,3,3);}
+    if(p.inside===b){const mxb=b.t.k==='house'?160:100;lg.fillStyle=OUT;lg.fillRect(cx-13,cy+9,26,7);lg.fillStyle='#d4a23a';lg.fillRect(cx-12,cy+10,Math.round(24*clamp(b.bar/mxb,0,1)),2);lg.fillStyle=S.pres>70?'#ff5a4a':'#c070ff';lg.fillRect(cx-12,cy+13,Math.round(24*clamp(S.pres/100,0,1)),2);}
+  }
+  // target
+  if(S.target&&S.target.o){const o=S.target.o,k=S.target.k;lg.fillStyle='#f0c350';let x,y,w,h;
+    if(k==='b'||k==='gas'||k==='in'){x=o.tx*G-ox-1;y=o.ty*G-oy-1;w=o.tw*G+2;h=o.th*G+2;}else{const q=w2s(o.x,o.y),r=k==='car'?12:8;x=q[0]-r;y=q[1]-r-2;w=h=r*2;}
+    const L=4;for(const c of [[x,y,1,1],[x+w-1,y,-1,1],[x,y+h-1,1,-1],[x+w-1,y+h-1,-1,-1]]){lg.fillRect(c[2]>0?c[0]:c[0]-L+1,c[1],L,1);lg.fillRect(c[0],c[3]>0?c[1]:c[1]-L+1,1,L);}
+    if(k==='b'||k==='gas'||k==='in'){lg.fillRect(x,y,w,1);lg.fillRect(x,y+h-1,w,1);lg.fillRect(x,y,1,h);lg.fillRect(x+w-1,y,1,h);}}
+  if(S.lz){const q=w2s(S.lz.x,S.lz.y);lg.fillStyle=(Math.floor(rt*2)&1)?'#7dff8a':'#3fae55';for(let a=0;a<6.28;a+=.16)lg.fillRect(Math.round(q[0]+Math.cos(a)*17),Math.round(q[1]+Math.sin(a)*17),1,1);bmp(lg,IC.H,q[0]-2,q[1]-2,'#7dff8a');}
+  if(S.drop){const q=w2s(S.drop.x,S.drop.y);lg.fillStyle='rgba(0,0,0,.3)';lg.fillRect(q[0]-4,q[1]-2,11,9);lg.fillStyle=OUT;lg.fillRect(q[0]-5,q[1]-5,10,10);lg.fillStyle='#c9853a';lg.fillRect(q[0]-4,q[1]-4,8,8);lg.fillStyle='#7a4a1a';lg.fillRect(q[0]-1,q[1]-4,2,8);lg.fillRect(q[0]-4,q[1]-1,8,2);
+    lg.fillStyle=(Math.floor(rt*3)&1)?'#ffb04a':'#a06a20';for(let a=0;a<6.28;a+=.35)lg.fillRect(Math.round(q[0]+Math.cos(a)*11),Math.round(q[1]+Math.sin(a)*11),1,1);}
+  // attack range (dither)
+  if(!hid){const wr=Math.round((WEAP[p.eq.w].range+10)*SC);lg.fillStyle='rgba(255,255,255,.2)';
+    for(let j=-wr;j<=wr;j++)for(let i=-wr;i<=wr;i++){if((i+j)&1||i*i+j*j>wr*wr)continue;if(Math.abs(angd(Math.atan2(j,i),p.face))<MARC)lg.fillRect(pd[0]+i,pd[1]+j,1,1);}
+    if(S.fire&&p.eq.gun&&S.ammo>0){lg.fillStyle='rgba(255,230,150,.4)';const c=Math.cos(p.face),s=Math.sin(p.face);for(let d=wr+4;d<136;d+=5)lg.fillRect(Math.round(pd[0]+c*d),Math.round(pd[1]+s*d),1,1);}}
+  // entities
+  const L=[];
+  for(const c of S.cars){if(!vis(c))continue;L.push({y:c.y-6,f:()=>{const q=w2s(c.x,c.y),d=dirOf(c.ang),im=carSpr(c.col,c.broken);
+    lg.fillStyle='rgba(0,0,0,.3)';if(d==='r'||d==='l')lg.fillRect(q[0]-8,q[1]-3,18,10);else lg.fillRect(q[0]-4,q[1]-7,10,18);
+    lg.save();lg.translate(q[0],q[1]);lg.rotate(d==='r'?0:d==='d'?Math.PI/2:d==='l'?Math.PI:-Math.PI/2);lg.drawImage(im,-9,-5);lg.restore();}});}
+  for(const z of S.zs){if(!vis(z))continue;L.push({y:z.y,f:()=>{drawSpr(z,(z.fl>0?SPR.zw:SPR.z)[z.k]);}});}
+  for(const s of S.sv){if(!vis(s))continue;L.push({y:s.y,f:()=>{const q=drawSpr(s,SPR.job[s.job]),b=Math.floor(S.time*3)&1;if(s.left)return;lg.fillStyle=OUT;lg.fillRect(q[0]-3,q[1]-17-b,6,8);bmp(lg,s.inj?IC.plus:IC.bang,q[0]-2,q[1]-16-b,s.inj?'#ff7a6a':'#7fe0ff');}});}
+  if(!hid){
+    for(const c of S.cs)L.push({y:c.y,f:()=>{const q=drawSpr(c,SPR.job[c.job]);if(c.sw>0)slash(q,c.face);
+      lg.fillStyle=OUT;lg.fillRect(q[0]-5,q[1]-10,10,3);lg.fillStyle=c.hp<c.mhp*.35?'#e0584a':'#6fdc8c';lg.fillRect(q[0]-4,q[1]-9,Math.round(8*clamp(c.hp/c.mhp,0,1)),1);}});
+    L.push({y:p.y+.01,f:()=>{const q=drawSpr(p,SPR.job[p.job]);if(p.swing>0)slash(q,p.face);bmp(lg,IC.me,q[0]-2,q[1]-11-(Math.floor(S.time*3)&1),'#ffd84a');}});
+  }
+  L.sort((a,b)=>a.y-b.y);for(const o of L)o.f();
+  if(S.heli){const h=S.heli,q=w2s(h.x,h.y),al=Math.round(h.alt),sw=Math.max(6,20-(al>>2));lg.fillStyle='rgba(0,0,0,.3)';lg.fillRect(q[0]-(sw>>1),q[1]+2,sw,5);lg.drawImage(heliSpr(),q[0]-12,q[1]-9-al);const rf=Math.floor(rt*18)&1;lg.fillStyle='rgba(235,235,235,.85)';lg.fillRect(q[0]-(rf?17:8)-1,q[1]-10-al,rf?34:16,1);}
+  for(const j of S.pj){const q=w2s(j.x,j.y);lg.fillStyle=OUT;lg.fillRect(q[0]-2,q[1]-4,4,4);lg.fillStyle='#b8f060';lg.fillRect(q[0]-1,q[1]-3,2,2);}
+  for(const b of S.booms){const q=w2s(b.x,b.y),r=Math.round((1-b.t/.4)*24)+3;lg.fillStyle=b.t>.2?'#f0f080':'#a8c84a';for(let j=-r;j<=r;j++)for(let i=-r;i<=r;i++){if((i+j)&1)continue;const dd=i*i+j*j;if(dd<=r*r&&dd>(r-5)*(r-5))lg.fillRect(q[0]+i,q[1]+j,1,1);}}
+  lg.fillStyle='#ffe9a0';for(const t of S.tr){const a=w2s(t.x1,t.y1),b=w2s(t.x2,t.y2),n=Math.max(Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1]))||1;for(let i=0;i<=n;i++)lg.fillRect(Math.round(a[0]+(b[0]-a[0])*i/n),Math.round(a[1]-2+(b[1]-a[1])*i/n),1,1);}
+  const dayT=(S.time%S.DAY)/S.DAY,da=clamp((dayT-.52)/.1,0,1)*clamp((1-dayT)/.06,0,1)*.95;
+  if(da>.01)drawDark(da,pd);
+  const arc=(a,r,ha,col)=>{lg.fillStyle=col;for(let t=-ha;t<=ha;t+=.06){lg.fillRect(Math.round(pd[0]+Math.cos(a+t)*r),Math.round(pd[1]-2+Math.sin(a+t)*r),1,1);lg.fillRect(Math.round(pd[0]+Math.cos(a+t)*(r+1)),Math.round(pd[1]-2+Math.sin(a+t)*(r+1)),1,1);}};
+  if(S.lz&&!S.cut&&hyp(S.lz.x-p.x,S.lz.y-p.y)>130)arc(Math.atan2(S.lz.y-p.y,S.lz.x-p.x),27,.2,'rgba(125,255,138,.95)');
+  if(!S.cut){const pt=(o,col)=>{if(hyp(o.x-p.x,o.y-p.y)>130)arc(Math.atan2(o.y-p.y,o.x-p.x),31,.14,col);};
+    if(S.drop)pt(S.drop,'rgba(255,176,74,.95)');if(S.sos)pt(S.sos.s,'rgba(127,224,255,.95)');
+    if(S.horde&&(Math.floor(rt*4)&1))arc(S.horde.a,35,.5,'rgba(255,60,50,.95)');}
+  for(const a of S.warn)arc(a,18,.25,'rgba(255,170,60,.8)');
+  for(const h of S.hits)arc(h.a,22,.45,'rgba(255,50,40,'+clamp(h.t*1.4,0,1)+')');
+  // upscale
+  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.imageSmoothingEnabled=false;ctx.drawImage(lo,0,0,lw*K,lh*K);
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  if(!hid){ctx.font=Math.max(9,K*4)+'px DotGothic16,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='#000';ctx.fillStyle='#fff';for(const c of S.cs){const q=w2s(c.x,c.y);ctx.strokeText(c.name,q[0]*K,(q[1]-12)*K);ctx.fillText(c.name,q[0]*K,(q[1]-12)*K);}}
+  ctx.font='bold 14px DotGothic16,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='#000';for(const f of S.fx){const q=w2s(f.x,f.y);ctx.globalAlpha=clamp(f.a,0,1);ctx.fillStyle=f.c;ctx.strokeText(f.t,q[0]*K,q[1]*K-(f.z||20));ctx.fillText(f.t,q[0]*K,q[1]*K-(f.z||20));}ctx.globalAlpha=1;
+  if(p.hum<30&&!S.cut){ctx.fillStyle='rgba(170,0,0,'+((30-p.hum)/30*(.24+.08*Math.sin(rt*3)))+')';ctx.fillRect(0,0,VW,VH);}
+  if(S.cut){ctx.fillStyle='rgba(255,255,255,'+clamp((S.esc-2.3)/1.2,0,1)+')';ctx.fillRect(0,0,VW,VH);}
+  if(S.over&&S.dz0){const t=(performance.now()-S.dz0)/1000,pr=clamp((t-.9)/1.7,0,1),z=Math.max(5,Math.floor(Math.min(VW,VH)/20)),hu=SPR.job[p.job].d[0],zo=SPR.z[0].d[0],w=10,h=12,
+      sh=pr>0&&pr<1?z*.35:0,x=Math.round(VW/2-w*z/2+(R()-.5)*sh),y=Math.round(VH*.4-h*z/2+(R()-.5)*sh),al=clamp(t/.5,0,1);
+    ctx.fillStyle='rgba(4,2,2,'+clamp(t/.6,0,.9)+')';ctx.fillRect(0,0,VW,VH);
+    ctx.imageSmoothingEnabled=false;ctx.globalAlpha=al;ctx.drawImage(hu,x,y,(w+2)*z,(h+2)*z);
+    for(let j=0;j<h+2;j++)for(let i=0;i<w+2;i++){const th=(1-j/(h+2))*.45+(((i*7+j*13)*31)%17)/17*.55;if(pr>th)ctx.drawImage(zo,i,j,1,1,x+i*z,y+j*z,z,z);}
+    if(pr>0&&pr<1&&(Math.floor(t*12)&1)){ctx.fillStyle='rgba(140,220,100,.1)';ctx.fillRect(x,y,(w+2)*z,(h+2)*z);}
+    ctx.globalAlpha=al;ctx.fillStyle=pr>=1?'#e05040':'#e8e4dc';ctx.font='18px DotGothic16,sans-serif';ctx.textAlign='center';
+    ctx.fillText(pr>=1?tr('……ア゛ァ……'):pr>0?tr('体が、言うことをきかない…'):S.dzk==='zombie'?tr('理性が、溶けていく…'):tr('傷口が、熱い…'),VW/2,y+(h+2)*z+34);ctx.globalAlpha=1;}
+  if(S.flash>0){ctx.fillStyle='rgba(246,210,100,' +S.flash*.5+')';ctx.fillRect(0,0,VW,VH);}
+  const low=1-p.hp/p.mhp;if(low>.5||S.hurt>0){const g=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.3,VW/2,VH/2,Math.max(VW,VH)*.7);g.addColorStop(0,'rgba(160,0,0,0)');g.addColorStop(1,'rgba(160,0,0,'+(clamp((low-.5)*1.2,0,.5)+(S.hurt>0?.3:0))+')');ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);}
+}
+let last=0;
+function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000||0);last=t;if(!S)return;if(S.cut&&!S.over&&!S.sys){S.esc+=dt;const h=S.heli;h.alt+=dt*(8+S.esc*16);if(S.esc>1.2)h.y-=dt*70*(S.esc-1.2);S.chT-=dt;if(S.chT<=0){S.chT=.11;noise(.05,.14,260);}if(S.esc>3.6)gameOver('clear');}
+  else if(!S.over&&!S.paused&&!S.sys)update(dt);render();}
+requestAnimationFrame(loop);
+
+/* ---------- ranking ---------- */
+let db=null,uid=null,dbReady=(async()=>{try{if(SELF||!window.claude||!claude.use)return;db=await claude.use('db');const u=await claude.use('user');uid=u?await u.id():null;}catch(e){db=null;}})();
+function lsGet(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function cleanNick(s){return String(s||'').replace(/[\u0000-\u001f]/g,'').trim().slice(0,12)||tr('名無しの生存者');}
+function jic(j){return(JOBS[j]||{ic:''}).ic;}
+let lastRun=null,submitted=false;
+function sc(v){return isFinite(+v.s)&&v.s!==undefined&&v.s!==null?+v.s:(+v.t||0)*10;}
+function gameOver(kind){
+  if(S.over)return;S.over=true;kind=kind||'dead';const sc=scoreNow()+(kind==='clear'?5000:0);if(kind!=='clear')S.p.hp=0;hud();
+  if(kind==='clear')SFX.lvl();else{tone(kind==='zombie'?70:140,1.1,'sawtooth',.2,35);S.dz0=performance.now();S.dzk=kind;document.body.classList.add('cut');setTimeout(()=>SFX.groan(.2),1200);setTimeout(()=>SFX.groan(.25),2200);setTimeout(()=>tone(90,.9,'sawtooth',.2,50),2700);}
+  $('oT').textContent=kind==='clear'?tr('🚁 人のまま、夜が明けた'):kind==='zombie'?tr('人では、なくなった'):tr('人のまま、死んだ');joy=null;$('joy').style.display='none';atkHeld=false;
+  lastRun={tok:S.tok,dk:S.rk,job:S.p.job,t:Math.floor(S.time),k:S.p.kills,h:Math.round(S.p.hum),s:sc,c:kind==='clear'?1:0};submitted=false;
+  $('big').textContent=sc.toLocaleString();$('oS').textContent=(EN?`${kind==='zombie'?'What used to be me is still walking the city.':TX.end(S.p.hum)}\n${S.D.n} / ${JOBS[S.p.job].n}   Survived ${fmt(S.time)}\n(Time ${Math.floor(S.time*10).toLocaleString()} + ${lastRun.k} kills ${S.kp.toLocaleString()}) × Humanity ${(.5+S.p.hum/100).toFixed(2)}${kind==='clear'?'\n+ Escape bonus 5,000':''}\nCombat Lv${S.p.lvl} / Threat Lv${S.thr} / Humanity ${lastRun.h} (${humName(lastRun.h)})`:`${kind==='zombie'?'私だったものが、まだ街を歩いている。':TX.end(S.p.hum)}\n${S.D.n}／${JOBS[S.p.job].n}　生存 ${fmt(S.time)}\n（時間 ${Math.floor(S.time*10).toLocaleString()} ＋ 撃破${lastRun.k}体 ${S.kp.toLocaleString()}）× 人間性倍率 ${(.5+S.p.hum/100).toFixed(2)}${kind==='clear'?'\n＋ 脱出ボーナス 5,000':''}\n戦闘Lv${S.p.lvl}／脅威Lv${S.thr}／人間性 ${lastRun.h}（${humName(lastRun.h)}）`);
+  $('nick').value=lsGet('ld_nick','');$('bSub').disabled=false;$('bSub').textContent=tr('ランキングに登録');
+  setTimeout(()=>$('over').classList.remove('hide'),kind==='clear'?700:3900);
+}
+async function submit(){
+  if(submitted||!lastRun)return;const b=$('bSub');b.disabled=true;b.textContent=tr('登録中…');
+  const nick=cleanNick($('nick').value);lsSet('ld_nick',nick);
+  const e={nick,s:lastRun.s,c:lastRun.c,t:lastRun.t,k:lastRun.k,job:lastRun.job,at:Date.now()};
+  const loc=lsGet('ld_scores',{});(loc[lastRun.dk]=loc[lastRun.dk]||[]).push(e);loc[lastRun.dk].sort((a,c)=>sc(c)-sc(a));loc[lastRun.dk]=loc[lastRun.dk].slice(0,20);lsSet('ld_scores',loc);
+  let online=false;await dbReady;
+  if(RANK_API){try{const r=await fetch(RANK_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({d:lastRun.dk,tok:lastRun.tok},e))});online=r.ok;}catch(err){}}
+  else if(db&&uid){try{const ref=db.doc('scores/'+uid),sn=await ref.get(),cur=sn.exists?Object.assign({},sn.data()):{};
+    if(!cur[lastRun.dk]||!(sc(cur[lastRun.dk])>=e.s)){cur[lastRun.dk]=e;await ref.set(cur);}online=true;}catch(err){online=false;}}
+  submitted=true;b.textContent=online?tr('登録しました'):tr('この端末に記録しました');showRank(lastRun.dk);
+}
+let rankTok=0;
+let rankD='normal',rankQ=0;
+async function showRank(dk){
+  rankQ=dk.endsWith('_q')?1:0;rankD=rankQ?dk.slice(0,-2):dk;
+  $('rank').classList.remove('hide');document.querySelectorAll('[data-r]').forEach(b=>b.classList.toggle('sel',b.dataset.r===rankD));document.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('sel',+b.dataset.m===rankQ));
+  const L=$('rlist'),N=$('rnote'),tok=++rankTok;L.textContent='';N.textContent=tr('読み込み中…');
+  let rows=null;await dbReady;
+  const tmo=new Promise((_,j)=>setTimeout(()=>j(0),10000));
+  if(RANK_API){try{const r=await Promise.race([fetch(RANK_API+'?d='+dk),tmo]);const a=await r.json();rows=a.filter(v=>v&&isFinite(+v.t)).map(v=>({nick:cleanNick(v.nick),t:+v.t,k:+v.k||0,job:v.job,s:sc(v),c:v.c}));}catch(e){rows=null;}}
+  else if(db){try{const sn=await Promise.race([db.collection('scores').limit(500).get(),tmo]);
+    rows=[];for(const d of sn.docs){const v=(d.data()||{})[dk];if(v&&isFinite(+v.t))rows.push({nick:cleanNick(v.nick),t:+v.t,k:+v.k||0,job:v.job,s:sc(v),c:v.c,me:d.id===uid});}}catch(e){rows=null;}}
+  if(tok!==rankTok)return;
+  if(rows){N.textContent=tr('オンラインランキング');}
+  else{rows=(lsGet('ld_scores',{})[dk]||[]).map(v=>({nick:cleanNick(v.nick),t:+v.t||0,k:+v.k||0,job:v.job,s:sc(v),c:v.c}));N.textContent=tr('この端末のみの記録（オンライン未接続）');}
+  rows.sort((a,c)=>c.s-a.s);
+  if(!rows.length){L.appendChild(el('div',null,tr('まだ記録がありません')));return;}
+  rows.slice(0,50).forEach((r,i)=>{const d=el('div',r.me?'me':null);for(const s of [i+1,jic(r.job)+r.nick+(r.c?'🚁':''),r.s.toLocaleString(),fmt(r.t)])d.appendChild(el('span',null,s));L.appendChild(d);});
+}
+/* ---------- help ---------- */
+const HK=t=>'<span class="hk">'+t+'</span>';
+const HELP=[
+{t:tr('画面の見方'),img:HDIR+'hud.jpg',marks:EN?[[43.6,7.1],[40.5,18],[52.1,32.6],[72.3,6.8],[68.1,16.8],[68.6,26.5],[60,78.7],[81,77.1],[59,90.5],[76.4,87.1],[43.1,49.5]]:[[43.6,7.1],[40.5,18],[52.1,32.6],[72.3,6.8],[66.7,16.8],[67.2,26.5],[60,78.7],[81,77.1],[59,90.5],[76.4,87.1],[43.1,49.5]],items:[
+ tr('<b>ステータス</b>：体力／満腹／水分／疲労／人間性。満腹と水分が高いほど体力が早く自然回復する。疲労が溜まると足が遅くなる'),
+ tr('<b>状態</b>：職業・戦闘Lv・撃破数・仲間の数／脅威Lv・人間性／武器（残り耐久）と弾／防具・燃料缶・修理パーツ'),
+ tr('<b>アイテム</b>：🍖食料 💧水 🩹包帯はタップで自分に使う。🎒はストレージと装備、🔫は銃を「撃つ／温存」に一括切替'),
+ tr('<b>ミニマップ</b>：白=自分　水色=生存者　黄=動く車　赤=近くのゾンビ　紫=無線機のある建物　橙=投下物資　緑=ヘリの合流地点'),
+ tr('<b>時間</b>：経過時間／日数と昼夜／救助まで（📻未入手なら無線機が必要）／スコア（×は人間性の倍率）'),
+ tr('<b>−＋</b> 拡大縮小　<b>⏸</b> 一時停止　<b>🔊</b> 消音'),
+ tr('<b>休む</b>：立ち止まって疲労を回復。動くか攻撃されると解除'),
+ tr('<b>行動ボタン</b>：近くの対象で「調べる・回収・話す・乗り物・隠れる・給油・降りる・外へ」に変わる。黄色く光っていれば使える'),
+ tr('<b>指示</b>：仲間に「お任せ → 攻撃 → 回避」を順に切替'),
+ tr('<b>攻撃</b>：近接は間合いに入れば自動。押している間は銃も使う'),
+ tr('<b>自分</b>：頭上の黄色い▼。足元の網目の扇が近接の届く範囲、点線が銃の向き。攻撃は<b>正面だけ</b>。赤い弧は殴られた方向、橙の弧は死角の敵')]},
+{t:tr('操作方法'),html:()=>(EN?`<p class="hp"><b style="color:#f0c350">Phone</b><br>・Drag anywhere on the screen to move that way (you also face that way)<br>・Tap the four buttons at the bottom right and the item buttons<br>・Turn the phone sideways for a landscape layout with items along the top</p>
+<p class="hp"><b style="color:#f0c350">PC</b> (keys are shown on each button)<br>
+${HK('W')}${HK('A')}${HK('S')}${HK('D')} move  /  Mouse: you face the cursor<br>
+Left click, ${HK('Enter')}, ${HK('Space')} attack  /  Hold right click: move toward the cursor<br>
+${HK('1')}Food ${HK('2')}Water ${HK('3')}Bandage ${HK('4')}🎒 ${HK('5')}🔫 toggle<br>
+${HK('O')}Rest ${HK('P')}Search / Talk / Drive ${HK('L')}Order companions<br>
+${HK('Esc')}Pause ${HK('M')}Mute ${HK('+')}${HK('-')} or wheel: zoom<br>Dialog choices can also be picked with number keys</p>`:`<p class="hp"><b style="color:#f0c350">スマホ</b><br>・画面のどこでもドラッグ：その方向へ移動（向きも変わる）<br>・右下の4ボタンと、アイテムのボタンをタップ<br>・横向きにすると、アイテムが上の中央に並ぶ横用の配置に切り替わる</p>
+<p class="hp"><b style="color:#f0c350">PC</b>（ボタンの左上にキーが表示されます）<br>
+${HK('W')}${HK('A')}${HK('S')}${HK('D')} 移動　／　マウス：カーソルの方向を向く<br>
+左クリック・${HK('Enter')}・${HK('Space')} 攻撃　／　右クリック長押し：カーソルへ移動<br>
+${HK('1')}食料 ${HK('2')}水 ${HK('3')}包帯 ${HK('4')}🎒 ${HK('5')}🔫切替<br>
+${HK('O')}休む ${HK('P')}調べる・話す・乗る ${HK('L')}仲間への指示<br>
+${HK('Esc')}一時停止 ${HK('M')}消音 ${HK('+')}${HK('-')}・ホイール 拡大縮小<br>会話の選択肢は数字キーでも選べる</p>`),img2:HDIR+'pc.jpg'},
+{t:tr('街と建物'),html:()=>tr('<p class="hp">屋根の印で種類が分かる。そばで行動ボタン（調べる）を押すと探索し、種類ごとの物資が手に入る。満杯で持てない分は残り、あとで「回収」できる。</p>'),list:[
+ ['house',tr('民家'),tr('食料・水・包帯・バット・ナイフ・革ジャケット・ライト。バリケードが頑丈で、調べ終えると隠れ家（🛏）になる')],
+ ['store',tr('コンビニ'),tr('食料と水が多い')],['hosp',tr('病院'),tr('包帯が多い。調べた瞬間に全員の体力が全回復')],
+ ['police',tr('警察署'),tr('弾・拳銃・防弾ベスト')],['gas',tr('ガソリンスタンド'),tr('燃料缶。車に乗って横付けすると直接給油できる')],
+ ['tool',tr('工具店'),tr('修理パーツ・斧・プロテクター・ライト')],['ware',tr('倉庫'),tr('物資が多いが、中にゾンビが潜んでいることが多い')],
+ ['door',tr('調べ終えた建物'),tr('「隠れる」で立てこもれる')],['x',tr('破られた建物'),tr('もう隠れられない')]],
+ after:tr('<p class="hp">・紫に点滅する印：<b style="color:#d080ff">無線機</b>がある建物（ふつう・地獄で必要）<br>・建物の中に生存者が隠れていることもある<br>・乗り捨てられた車は、修理パーツで直し、燃料缶で給油すれば乗れる。ゾンビを轢けるが車も傷む</p>')},
+{t:tr('生存者と人間性'),img:HDIR+'dialog.jpg',html:()=>(EN?`<p class="hp">Talk to anyone with "!" overhead ("+" if injured) and you must choose.<br>
+・<b>Recruit</b>: they fight with you and add storage slots, but consume food and water (up to 4)<br>
+・<b>Temper</b>: Brave = attacks on their own / Careful = guards your side / Timid = never fights, runs away<br>
+・<b>⚠ Drawbacks</b>: some are Big Eaters, Heavy Sweaters, Frail or Noisy</p>
+<p class="hp"><b style="color:#f0c350">Humanity</b> (moves with your choices)<br>
+・High (50+): you and your companions heal faster. At 70+ you also see farther at night<br>
+・Low (under 30): your vision turns red, healing slows, survivors refuse you and companions flee<br>
+・<b style="color:#ff7a6a">At 0 you turn into a zombie — game over</b><br>
+・Rises slowly up to 60 while you have companions. Falls with hunger, thirst, and nights alone<br>
+・Your score is multiplied by 0.5 to 1.5 depending on humanity</p>`:`<p class="hp">頭上に「!」（負傷者は「+」）がある人に話しかけると選択を迫られる。<br>
+・<b>仲間にする</b>：一緒に戦い、所持枠が増える。ただし食料と水を消費する（最大4人）<br>
+・<b>性格</b>：勇敢＝自分から戦う／慎重＝そばを守る／臆病＝戦わず逃げ回る<br>
+・<b>⚠デバフ</b>：大食い・汗かき・病弱・騒がしい、を持つ人もいる</p>
+<p class="hp"><b style="color:#f0c350">人間性</b>（選択で上下する）<br>
+・高い（50〜）：自分と仲間の回復が速い。70以上で夜の視界も広がる<br>
+・低い（30未満）：視界が赤く染まり、回復が遅く、仲間に断られ・逃げられる<br>
+・<b style="color:#ff7a6a">0でゾンビ化してゲームオーバー</b><br>
+・仲間といると60まで少しずつ上がる。飢え・渇き、夜の孤独で下がる<br>
+・スコアは人間性で0.5〜1.5倍になる</p>`)},
+{t:tr('夜と立てこもり'),img:HDIR+'night.jpg',html:()=>(EN?`<p class="hp"><b style="color:#f0c350">Night</b>: you can only see around yourself. A <b>flashlight</b> lights what is in front of you, and guns can only target what is lit. Car headlights reach even farther.</p>`:`<p class="hp"><b style="color:#f0c350">夜</b>：自分の周りしか見えない。<b>ライト</b>があると正面が照らされ、銃で狙えるのも照らした範囲だけ。車のヘッドライトはさらに遠くまで届く。</p>`),
+ img2n:HDIR+'shelter.jpg',after:(EN?`<p class="hp"><b style="color:#f0c350">Shelter</b>: Hide in a searched building (🚪). Distant zombies will not notice you, and resting inside recovers 2x.<br>
+・The <b style="color:#d4a23a">yellow bar</b> on the roof is the barricade. At 0 it breaks and that building can never be used again<br>
+・The <b style="color:#c070ff">purple bar</b> is noise. It fills faster while you rest (snoring); when full, zombies gather</p>`:`<p class="hp"><b style="color:#f0c350">立てこもり</b>：調べ終えた建物（🚪）で「隠れる」。遠くのゾンビに気づかれず、中で休むと回復が2倍。<br>
+・屋根の<b style="color:#d4a23a">黄色いバー</b>＝バリケードの耐久。0で破られ、その建物は二度と使えない<br>
+・<b style="color:#c070ff">紫のバー</b>＝気配。休むとイビキで早く溜まり、満ちるとゾンビが集まってくる</p>`)},
+{t:tr('ゾンビ図鑑'),zlist:[
+ [0,tr('通常'),tr('遅いが数が多い')],[1,tr('俊足'),tr('足が速く、体力は低い')],[2,tr('大型'),tr('硬くて一撃が重い')],
+ [3,tr('絶叫型'),tr('見つけると叫び、周囲のゾンビをまとめて呼ぶ。最優先で倒す')],
+ [4,tr('膨張型'),tr('倒すと破裂して周囲にダメージ。銃で離れて倒すか、倒したら離れる')],
+ [5,tr('吐きかけ型'),tr('離れた所から弾を吐く。立ち止まらない')],
+ [6,tr('夜行型'),tr('夜だけ現れて速い。ライトで照らすと大きく怯み、脆くなる。朝に消える')]],
+ after:tr('<p class="hp">時間が経つほど「脅威Lv」が上がり、数・体力・攻撃が増え、新しい種類が出てくる。</p>')},
+{t:tr('装備とアイテム'),img:HDIR+'bag.jpg',html:()=>(EN?`<p class="hp">Open with 🎒.<br>
+・<b>Slots</b>: 12 to start, +6 per companion. Ammo takes no slots<br>
+・<b>Items</b>: food, water and bandages can be used on you or a companion<br>
+・<b>Gear</b>: better finds are equipped automatically and hand-me-downs go to companions. You can swap or unequip here<br>
+・<b>Weapon durability</b>: drops with every hit and the weapon breaks at 0. A spare is equipped automatically. One repair part restores it<br>
+・<b>Abandon</b>: leave a companion behind (Humanity −15)</p>`:`<p class="hp">🎒で開く。<br>
+・<b>所持枠</b>：基本12。仲間1人につき+6。弾は枠を使わない<br>
+・<b>アイテム</b>：食料・水・包帯は自分にも仲間にも使える<br>
+・<b>装備</b>：拾った物は良ければ自動で装備し、お下がりは仲間へ回る。ここで付け替え・外すこともできる<br>
+・<b>武器の耐久</b>：当たるたびに減り、0で壊れる。予備があれば自動で持ち替え。修理パーツ1個で修理できる<br>
+・<b>置いていく</b>：仲間を個別に置き去りにできる（人間性−15）</p>`)},
+{t:tr('救助とスコア'),html:()=>(EN?`<p class="hp"><b style="color:#f0c350">Goal</b>: survive 20 minutes (5 in Quick mode) and escape on the rescue helicopter.<br>
+・Normal and Hell require a <b style="color:#d080ff">📻 radio</b> (purple-marked buildings). Easy does not<br>
+・Late in the run a landing zone (green mark) is announced, and the helicopter lands on time. Get close to escape<br>
+・Along the way: 📦 supply drops (orange), ⚠ approaching hordes, 🆘 distress signals (cyan)</p>
+<p class="hp"><b style="color:#f0c350">Score</b> = (survival time × 10 + kill points) × humanity multiplier. +5,000 for escaping.<br>Rankings are separate per difficulty and mode. There is no saving.</p>`:`<p class="hp"><b style="color:#f0c350">目的</b>：通常は20分、クイックは5分生き延びて、救助ヘリで脱出する。<br>
+・ふつう・地獄は<b style="color:#d080ff">📻無線機</b>（紫の印の建物）が必要。やさしいは不要<br>
+・終盤に合流地点（緑の印）が示され、時間になるとヘリが着陸する。近づけば脱出<br>
+・途中、📦物資投下（橙）、⚠大群の接近、🆘救難信号（水色）が起きる</p>
+<p class="hp"><b style="color:#f0c350">スコア</b>＝（生存時間×10 ＋ 撃破点）× 人間性の倍率。脱出で+5,000。<br>ランキングは難易度とモードごとに分かれる。セーブはない。</p>`)}];
+let hPage=0,hWas=false;
+function hCanvas(w,h,sc,draw){const c=mkc(w,h);c.style.width=w*sc+'px';c.style.height=h*sc+'px';draw(c.getContext('2d'));return c;}
+function renderHelp(){
+  const H=HELP[hPage],o=$('hBody');o.textContent='';$('hT').textContent='📖 '+(hPage+1)+'/'+HELP.length+tr('　')+H.t;
+  const tabs=$('hTabs');tabs.textContent='';HELP.forEach((h,i)=>{const b=el('button','btn sm'+(i===hPage?' sel':''),h.t);b.onclick=()=>{hPage=i;renderHelp();};tabs.appendChild(b);});
+  const fig=(src,marks,wide)=>{const f=el('div','hfig'+(wide?' wide':'')),im=el('img');im.src=src;im.alt='';im.loading='lazy';f.appendChild(im);
+    (marks||[]).forEach((m,i)=>{const d=el('div','hm',i+1);d.style.left=m[0]+'%';d.style.top=m[1]+'%';f.appendChild(d);});o.appendChild(f);};
+  const html=t=>{const d=el('div');d.innerHTML=t;o.appendChild(d);};
+  if(H.img&&H.marks)fig(H.img,H.marks);
+  if(H.html)html(H.html());
+  if(H.img&&!H.marks)fig(H.img);
+  if(H.img2)fig(H.img2,null,true);
+  if(H.items){const ul=el('ul','hl');H.items.forEach((t,i)=>{const li=el('li');li.appendChild(el('b','n',i+1));const sp=el('span');sp.innerHTML=t;li.appendChild(sp);ul.appendChild(li);});o.appendChild(ul);}
+  if(H.list){const ul=el('ul','hl');for(const r of H.list){const li=el('li');li.appendChild(hCanvas(13,13,2,g=>{g.fillStyle='#111';g.fillRect(0,0,13,13);bmp(g,IC[r[0]],3,3,r[0]==='door'?'#e8c060':r[0]==='x'?'#e0584a':'#fff');}));const sp=el('span');sp.innerHTML='<b>'+r[1]+tr('</b>：')+r[2];li.appendChild(sp);ul.appendChild(li);}o.appendChild(ul);}
+  if(H.zlist){const ul=el('ul','hl');for(const r of H.zlist){const im=SPR.z[r[0]].d[0];const li=el('li');li.appendChild(hCanvas(16,16,3,g=>{g.imageSmoothingEnabled=false;g.drawImage(im,(16-im.width)>>1,(16-im.height)>>1);}));const sp=el('span');sp.innerHTML='<b>'+r[1]+tr('</b>：')+r[2];li.appendChild(sp);ul.appendChild(li);}o.appendChild(ul);}
+  if(H.img2n)fig(H.img2n);
+  if(H.after)html(H.after);
+  $('hPrev').disabled=hPage===0;$('hNext').disabled=hPage===HELP.length-1;
+  const sc=$('help');sc.scrollTop=0;
+}
+function openHelp(){renderHelp();$('help').classList.remove('hide');}
+$('bHelp').onclick=openHelp;$('bHelpP').onclick=openHelp;$('hClose').onclick=()=>$('help').classList.add('hide');
+$('hPrev').onclick=()=>{if(hPage>0){hPage--;renderHelp();}};$('hNext').onclick=()=>{if(hPage<HELP.length-1){hPage++;renderHelp();}};
+
+/* ---------- title ---------- */
+const REPO_URL='https://github.com/MSNR-Create/Scavendawn';   // GitHub のURLを入れるとタイトルに「ソースコード」リンクが出る
+if(REPO_URL)$('repoA').href=REPO_URL;else $('repoWrap').style.display='none';
+document.querySelectorAll('[data-l]').forEach(b=>{b.classList.toggle('sel',b.dataset.l===LANG);b.onclick=()=>{if(b.dataset.l!==LANG)setLang(b.dataset.l);};});
+document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{selD=b.dataset.d;document.querySelectorAll('[data-d]').forEach(x=>x.classList.toggle('sel',x===b));});
+for(const k of ['cop','nurse','mech','ath']){const J=JOBS[k],b=el('button','btn',J.ic+' '+J.n);b.appendChild(el('small',null,J.d));b.onclick=()=>{au();newGame(selD,k,selQ);$('title').classList.add('hide');if(RANK_API)fetch(RANK_API+'?start=1').then(r=>r.json()).then(j=>{if(S)S.tok=j.tok;}).catch(()=>{});};$('jobs').appendChild(b);}
+document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>showRank(b.dataset.r+(rankQ?'_q':'')));
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>showRank(rankD+(+b.dataset.m?'_q':'')));
+let selQ=0;document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{selQ=+b.dataset.q;document.querySelectorAll('[data-q]').forEach(x=>x.classList.toggle('sel',x===b));});
+$('bRankT').onclick=()=>showRank(selD+(selQ?'_q':''));$('bRankO').onclick=()=>showRank(lastRun?lastRun.dk:'normal');$('bRankC').onclick=()=>$('rank').classList.add('hide');
+$('bSub').onclick=submit;
+$('bRetry').onclick=()=>{document.body.classList.remove('cut');$('over').classList.add('hide');S=null;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);$('title').classList.remove('hide');};
+if(SELF){const l=el('link');l.rel='manifest';l.href='manifest.json';document.head.appendChild(l);if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>

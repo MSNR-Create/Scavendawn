@@ -1,0 +1,4 @@
+# ランキングの実データと署名用シークレット（サーバー上で自動生成される。公開しない）
+rank_data.json
+rank_secret.php
+*.zip
